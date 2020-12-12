@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+ 
+ 
+{% block title %} Home {% endblock %}
+ 
+{% block body %}
+ 
+<div class="container">
+    <h1>Pulsar Survey Scraper</h1>
+ 
+    <br>
+    <br>
+    <hr>
+ 
+    <h1>Enter a location to search:</h1>
+ 
+    <form action="" method="post" novalidate>
+      {{form.csrf_token}}
+ 
+      <p>
+ 
+          {{form.coordinates.label}}
+          {{form.coordinates(size=32)}}
+           {% for error in form.coordinates.errors %}
+          <span style="color:red;">
+ 
+              {{error}}
+          </span>
+          {% endfor %}
+
+      </p> 
+      <p>
+ 
+          {{form.radius.label}}
+          {{form.radius(size=32)}}
+          {% for error in form.radius.errors %}
+          <span style="color:red;">
+ 
+              {{error}}
+          </span>
+          {% endfor %}
+
+      </p>
+ 
+      <p>
+ 
+          {{form.dm.label}}
+          {{form.dm(size=32)}} (optional)
+          {% for error in form.dm.errors %}
+          <span style="color:red;">
+ 
+              {{error}}
+          </span>
+          {% endfor %}
+ 
+      </p>
+ 
+      <p>
+ 
+          {{form.dmtol.label}}
+          {{form.dmtol(size=32)}} (optional)
+           {% for error in form.dmtol.errors %}
+          <span style="color:red;">
+ 
+              {{error}}
+          </span>
+          {% endfor %}
+
+      </p>
+ 
+ 
+        <p>
+<!-- <input type="submit" value="Search" class="btn btn-success"> -->
+<!-- <input type="submit" value="API" class="btn btn-success"> -->
+{{ form.search }}
+{{ form.api }}
+{{ form.clear }}
+        </p>
+ 
+ 
+ 
+    </form>
+</div>
+<div class="container">
+{%if coord_string is defined %}
+<hr>
+<span>{{coord_string|safe}}</span><br><br>
+{%if nfound|int == 0 %}
+<span>No pulsars found</span><br><br>
+{% else %}
+{%if nfound|int == 1 %}
+<span>{{nfound}} pulsar found:</span><br>
+{%else%}
+<span>{{nfound}} pulsars found:</span><br>
+{%endif%}
+{%endif%}
+<span>{{html_table|safe}}</span>
+{% endif %}
+</div>
+
+
+<div class="container">
+    <hr>
+<span>
+Surveys:<br>
+{%for survey, url in surveys%}
+<a href="{{url}}">{{survey}}</a>
+{%endfor%}
+</span>
+ 
+</div> 
+
+ 
+{% endblock %}
