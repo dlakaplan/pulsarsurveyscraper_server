@@ -12,17 +12,18 @@ Among others, I used these tutorials:
 https://codeloop.org/flask-tutorial-flask-forms-with-flask-wtf/
 """
 
-# instantiate the pulsar survey table
-# this needs the directory where the data are stored
-# do it at the top level so that it's accessible within the functions below
-pulsar_table = pulsarsurveyscraper.PulsarTable(
-    directory="/Users/kaplan/pythonpackages/pulsarsurveyscraper"
-)
 
 # create the Flask object
 app = Flask(__name__)
 
-app.config["SECRET_KEY"] = "hardsecretkey"
+app.config.from_object("server_config")
+
+# instantiate the pulsar survey table
+# this needs the directory where the data are stored
+# do it at the top level so that it's accessible within the functions below
+pulsar_table = pulsarsurveyscraper.PulsarTable(
+    directory=app.config["DATA_DIR"],
+)
 
 
 @app.route("/search", methods=["GET", "POST"])
