@@ -27,6 +27,7 @@ pulsar_table = pulsarsurveyscraper.PulsarTable(
 
 
 @app.route("/search", methods=["GET", "POST"])
+@app.route("/", methods=["GET", "POST"])
 def Search():
     """
     search form route
