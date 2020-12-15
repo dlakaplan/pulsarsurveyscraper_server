@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+ 
+ 
+{% block title %} Home {% endblock %}
+ 
+{% block body %}
+ 
+<div class="container">
+    <h1>Galactic Dispersion Model</h1>
+ 
+    <br>
+    <br>
+    <hr>
+ 
+    <h1>Enter a location to search:</h1>
+ 
+    <form action="" method="post" novalidate>
+      {{form.csrf_token}}
+ 
+      <p>
+ 
+          {{form.coordinates.label}}
+          {{form.coordinates(size=32)}}
+
+{% for subfield in form.lb_or_radec_selector %}
+    <tr>
+        <td>{{ subfield }}</td>
+        <td>{{ subfield.label }}</td>
+    </tr>
+{% endfor %}
+           {% for error in form.coordinates.errors %}
+          <span style="color:red;">
+ 
+              {{error}}
+          </span>
+          {% endfor %}
+      </p> 
+      <p>
+ 
+          {{form.d_or_dm.label}}
+          {{form.d_or_dm(size=32)}}
+{% for subfield in form.d_or_dm_selector %}
+    <tr>
+        <td>{{ subfield }}</td>
+        <td>{{ subfield.label }}</td>
+    </tr>
+{% endfor %}
+          {% for error in form.d_or_dm.errors %}
+          <span style="color:red;">
+ 
+              {{error}}
+          </span>
+          {% endfor %}
+
+      </p>
+ 
+      <p>
+ {% for subfield in form.model_selector %}
+    <tr>
+        <td>{{ subfield }}</td>
+        <td>{{ subfield.label }}</td>
+    </tr>
+{% endfor %}
+
+      </p>
+ 
+ 
+        <p>
+<!-- <input type="submit" value="Search" class="btn btn-success"> -->
+<!-- <input type="submit" value="API" class="btn btn-success"> -->
+{{ form.compute }}
+{{ form.clear }}
+        </p>
+ 
+ 
+ 
+    </form>
+</div>
+<div class="container">
+{%if coord_string is defined %}
+<hr>
+<span>{{coord_string|safe}}</span><br><br>
+<span>{{result_string|safe}}</span>
+{% endif %}
+</div>
+
+    <div class="container">
+    <hr>
+    Based on <a href="https://github.com/FRBs/pygedm">PyGEDM</a>,
+    which itself uses <a
+    href="https://ui.adsabs.harvard.edu/abs/2017ApJ...835...29Y/abstract">Yao,
+    Manchester and Wang (2017; YMW16)</a> and <a
+    href="https://ui.adsabs.harvard.edu/abs/2002astro.ph..7156C/abstract">Cordes
+    and Lazio (2002; NE2001)</a>.
+    </div>
+
+ 
+{% endblock %}
