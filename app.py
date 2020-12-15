@@ -1,5 +1,10 @@
 from flask import Flask, render_template, request, url_for, redirect
-from forms import SearchForm, DMForm, parse_equcoord_and_validate
+from forms import (
+    SearchForm,
+    DMForm,
+    parse_equcoord_and_validate,
+    parse_galcoord_and_validate,
+)
 
 from astropy.coordinates import SkyCoord
 from astropy import units as u
@@ -22,9 +27,8 @@ app.config.from_object("server_config")
 # instantiate the pulsar survey table
 # this needs the directory where the data are stored
 # do it at the top level so that it's accessible within the functions below
-pulsar_table = pulsarsurveyscraper.PulsarTable(
-    directory=app.config["DATA_DIR"],
-)
+pulsar_table = pulsarsurveyscraper.PulsarTable(directory=app.config["DATA_DIR"],)
+
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/search", methods=["GET", "POST"])
@@ -99,10 +103,8 @@ def Search():
             coord.dec.to_string(decimal=True, alwayssign=True),
         )
         if DM is not None:
-            coord_string += (
-                "<br>Also requiring DM with +/-{:.1f} of {:.1f} pc/cm**2".format(
-                    DMtol, DM
-                )
+            coord_string += "<br>Also requiring DM with +/-{:.1f} of {:.1f} pc/cm**2".format(
+                DMtol, DM
             )
 
         # go from astropy Table -> pandas dataframe -> HTML table
@@ -110,10 +112,7 @@ def Search():
         # turn the "PSR" column from bytestring to string
         df["PSR"] = df["PSR"].str.decode("utf-8")
         html_table = df.to_html(
-            formatters={
-                "P": lambda x: "%.2f" % x,
-                "Distance": lambda x: "%.2f" % x,
-            },
+            formatters={"P": lambda x: "%.2f" % x, "Distance": lambda x: "%.2f" % x,},
             justify="left",
         )
         # reformat a bit to get links to the survey sites
@@ -188,6 +187,7 @@ def API():
 
     return result
 
+
 @app.route("/compute", methods=["GET", "POST"])
 def Compute():
     """
@@ -196,55 +196,69 @@ def Compute():
     """
     form = DMForm()
 
-
     # if the button has been pressed and the input is valid:
     if form.validate_on_submit():
         # use the validation routine
         # to parse the coordinates
         if form.lb_or_radec_selector.data == "equatorial":
             coord = parse_equcoord_and_validate(None, form.coordinates)
-        elif  form.lb_or_radec_selector.data == "galactic":
-            coord = parse_galcoord_and_validate(None, form.coordinates)            
+        elif form.lb_or_radec_selector.data == "galactic":
+            coord = parse_galcoord_and_validate(None, form.coordinates)
         if form.d_or_dm_selector.data == "dm":
             DM = float(form.d_or_dm.data)
-            distance, _ = pygedm.dm_to_dist(coord.galactic.l,
-                                            coord.galactic.b,
-                                            DM,
-                                            method = form.model_selector.data)
+            distance, _ = pygedm.dm_to_dist(
+                coord.galactic.l, coord.galactic.b, DM, method=form.model_selector.data
+            )
         elif form.d_or_dm_selector.data == "distance":
-            distance = float(form.d_or_dm.data)*u.pc
-            DM, _ = pygedm.dist_to_dm(coord.galactic.l,
-                                      coord.galactic.b,
-                                      distance,
-                                      method = form.model_selector.data)
-                
+            distance = float(form.d_or_dm.data) * u.pc
+            DM, _ = pygedm.dist_to_dm(
+                coord.galactic.l,
+                coord.galactic.b,
+                distance,
+                method=form.model_selector.data,
+            )
+
         # or, clear the form if desired
         if form.clear.data:
             return redirect(url_for("Compute"))
 
         # make a nice string for output
-        coord_string = "Computing for RA,Dec {} = {}d,{}d, l,b = {}d,{}d ...".format(
-            coord.icrs.to_string("hmsdms", sep=":"),
-            coord.icrs.ra.to_string(decimal=True),
-            coord.icrs.dec.to_string(decimal=True, alwayssign=True),
-            coord.galactic.l.to_string(decimal=True),
-            coord.galactic.b.to_string(decimal=True),
-        )
+        if form.lb_or_radec_selector.data == "equatorial":
+            coord_string = "Computing for RA,Dec {} = {}d,{}d".format(
+                coord.icrs.to_string("hmsdms", sep=":"),
+                coord.icrs.ra.to_string(decimal=True),
+                coord.icrs.dec.to_string(decimal=True, alwayssign=True),
+            )
+            coord_string += "<br>= l,b = {}d,{}d ...".format(
+                coord.galactic.l.to_string(decimal=True),
+                coord.galactic.b.to_string(decimal=True),
+            )
+        else:
+            coord_string = "Computing for l,b = {}d,{}d ...".format(
+                coord.galactic.l.to_string(decimal=True),
+                coord.galactic.b.to_string(decimal=True),
+            )
+            coord_string += "<br>= RA,Dec {} = {}d,{}d".format(
+                coord.icrs.to_string("hmsdms", sep=":"),
+                coord.icrs.ra.to_string(decimal=True),
+                coord.icrs.dec.to_string(decimal=True, alwayssign=True),
+            )
         if form.d_or_dm_selector.data == "dm":
-            result_string = "For DM = {:.1f}, find distance = {:.1f} pc".format(DM,
-                                                                                distance.to(u.pc).value)
+            result_string = "For DM = {:.1f} pc/cc, find distance = {:.1f} pc".format(
+                DM, distance.to(u.pc).value
+            )
         elif form.d_or_dm_selector.data == "distance":
-            for model,model_label in form.model_selector.choices:
+            for model, model_label in form.model_selector.choices:
                 if model == form.model_selector.data:
                     break
-            result_string = "For distance = {:.1f} pc, find DM = {:.1f} pc/cc with the {} model".format(distance.to(u.pc).value,
-                                                                                                        DM.value,
-                                                                                                        model_label)
+            result_string = "For distance = {:.1f} pc, find DM = {:.1f} pc/cc with the {} model".format(
+                distance.to(u.pc).value, DM.value, model_label
+            )
         return render_template(
             "compute.html",
             form=form,
             coord_string=coord_string,
-            result_string = result_string,
+            result_string=result_string,
         )
 
     # we can clear even if it's not valid
@@ -252,7 +266,6 @@ def Compute():
         return redirect(url_for("Compute"))
 
     return render_template("compute.html", form=form)
-
 
 
 # run flask app

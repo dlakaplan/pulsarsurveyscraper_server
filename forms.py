@@ -7,6 +7,7 @@ from astropy import units as u
 
 import pulsarsurveyscraper
 
+
 def parse_equcoord_and_validate(form, data):
     """
     parse equatorial input form coordinates and validate them
@@ -40,10 +41,11 @@ def parse_equcoord_and_validate(form, data):
                 "Unable to parse input coordinate = '{},{}': {}".format(ra, dec, e)
             )
     except u.core.UnitsError as e:
-            raise ValidationError(
-                "Unable to parse input coordinate = '{},{}': {}".format(ra, dec, e)
-            )        
+        raise ValidationError(
+            "Unable to parse input coordinate = '{},{}': {}".format(ra, dec, e)
+        )
     return coord
+
 
 def parse_galcoord_and_validate(form, data):
     """
@@ -65,14 +67,14 @@ def parse_galcoord_and_validate(form, data):
             re.search(r"[^\d.+\-]", gal_b) is None
         ):
             # if it only has digits/sign/decimal, it's probably decimal degrees
-            coord = SkyCoord(gal_l, gal_b, unit="deg")
+            coord = SkyCoord(gal_l, gal_b, frame="galactic", unit="deg")
         else:
             # see if astropy can figure out the units
-            coord = SkyCoord(gal_l, gal_b)
+            coord = SkyCoord(gal_l, gal_b, frame="galactic")
     except ValueError as e:
         raise ValidationError(
             "Unable to parse input coordinate = '{},{}': {}".format(gal_l, gal_b, e)
-            )
+        )
     return coord
 
 
@@ -91,7 +93,7 @@ class SearchForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinate (RA Dec)",
+        "Search Coordinate (RA Dec or l b)",
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
     radius = DecimalField(
@@ -124,23 +126,24 @@ class DMForm(FlaskForm):
         "Search Coordinate (RA Dec)",
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
-    d_or_dm = DecimalField(
-        "Distance (pc) or DM", validators=[InputRequired()]
+    d_or_dm = DecimalField("Distance (pc) or DM", validators=[InputRequired()])
+    d_or_dm_selector = RadioField(
+        "Input is Distance or DM",
+        default="distance",
+        choices=[("distance", "Distance"), ("dm", "DM")],
+        validators=[InputRequired()],
     )
-    d_or_dm_selector = RadioField("Input is Distance or DM",
-                                  default="distance",
-                                  choices=[("distance","Distance"),
-                                           ("dm","DM")],
-                                  validators=[InputRequired()])
-    lb_or_radec_selector = RadioField("Equatorial (RA,Dec) or Galactic (l,b)",
-                                      default="equatorial",
-                                      choices=[("equatorial","Equatorial (RA,Dec)"),
-                                               ("galactic","Galactic (l,b)")],
-                                   validators=[InputRequired()])
-    model_selector = RadioField("DM Model",
-                                default="ne2001",
-                                choices=[("ne2001","NE2001"),
-                                         ("ymw16","YMW16")],
-                                validators=[InputRequired()])
+    lb_or_radec_selector = RadioField(
+        "Equatorial (RA,Dec) or Galactic (l,b)",
+        default="equatorial",
+        choices=[("equatorial", "Equatorial (RA,Dec)"), ("galactic", "Galactic (l,b)")],
+        validators=[InputRequired()],
+    )
+    model_selector = RadioField(
+        "DM Model",
+        default="ne2001",
+        choices=[("ne2001", "NE2001"), ("ymw16", "YMW16")],
+        validators=[InputRequired()],
+    )
     compute = SubmitField(label="Compute")
     clear = SubmitField(label="Clear")

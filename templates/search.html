@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
  
- 
+{% set active_page = "search" %}
+
 {% block title %} Home {% endblock %}
  
 {% block body %}
@@ -107,7 +108,10 @@ Surveys:<br>
 <a href="{{url}}">{{survey}}</a>
 {%endfor%}
 </span>
- 
+
+<hr>
+Inspired by <a href="http://hosting.astro.cornell.edu/~deneva/tabscr/tabscr.php">Julia Deneva's Pulsar Survey Scraper</a>
+
 </div> 
 
  
