@@ -9,6 +9,7 @@ from forms import (
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import pandas
+import beautifulsoup4
 
 import pulsarsurveyscraper
 import pygedm
@@ -115,6 +116,8 @@ def Search():
             formatters={"P": lambda x: "%.2f" % x, "Distance": lambda x: "%.2f" % x,},
             justify="left",
         )
+        # add units to the distance column
+        html_table = html_table.replace("Distance", "Distance (deg)")
         # reformat a bit to get links to the survey sites
         for survey in pulsarsurveyscraper.Surveys:
             html_table = html_table.replace(
