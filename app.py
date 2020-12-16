@@ -9,7 +9,8 @@ from forms import (
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import pandas
-import beautifulsoup4
+
+from bs4 import BeautifulSoup, Tag
 
 import pulsarsurveyscraper
 import pygedm
@@ -126,6 +127,15 @@ def Search():
                     pulsarsurveyscraper.Surveys[survey]["url"], survey
                 ),
             )
+        soup = BeautifulSoup(html_table, "html.parser")
+        rows = soup.find_all("tr")
+        # fix the alignment of various columns
+        col_aligns = {3: "right", 4: "right", 5: "center", 7: "right"}
+        for row in rows[1:]:
+            cols = row.find_all("td")
+            for i in col_aligns:
+                cols[i]["align"] = col_aligns[i]
+        html_table = soup
 
         return render_template(
             "search.html",
