@@ -119,25 +119,33 @@ def Search():
             formatters={"P": lambda x: "%.2f" % x, "Distance": lambda x: "%.2f" % x,},
             justify="left",
         )
-        # add units to the distance column
-        html_table = html_table.replace("Distance", "Distance (deg)")
-        # and the period column
-        # html_table = html_table.replace("P", "P (ms)")
 
-        # reformat a bit to get links to the survey sites
-        for survey in pulsarsurveyscraper.Surveys:
-            html_table = html_table.replace(
-                survey,
-                "<a href='{}'>{}</a>".format(
-                    pulsarsurveyscraper.Surveys[survey]["url"], survey
-                ),
-            )
         soup = BeautifulSoup(html_table, "html.parser")
-        rows = soup.find_all("tr")
+        header_row = soup.find("tr")
+        header_cols = header_row.find_all("th")
+        # add units to the header row
+        for col in header_cols:
+            if col.text == "P":
+                col.string = "P (ms)"
+            elif col.text == "Distance":
+                col.string = "Distance (deg)"
+            elif col.text == "RA":
+                col.string = "RA (deg)"
+            elif col.text == "Dec":
+                col.string = "Dec (deg)"
         # fix the alignment of various columns
         col_aligns = {3: "right", 4: "right", 5: "center", 7: "right"}
+        rows = soup.find_all("tr")
         for row in rows[1:]:
             cols = row.find_all("td")
+            # add links to survey column
+            print(cols[5].text, pulsarsurveyscraper.Surveys[cols[5].text]["url"])
+            link_tag = soup.new_tag(
+                "a", href=pulsarsurveyscraper.Surveys[cols[5].text]["url"],
+            )
+            link_tag.string = cols[5].text
+            cols[5].string = ""
+            cols[5].insert(0, link_tag)
             for i in col_aligns:
                 cols[i]["align"] = col_aligns[i]
         html_table = soup
