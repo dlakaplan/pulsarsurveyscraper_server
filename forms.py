@@ -32,7 +32,7 @@ def parse_equcoord_and_validate(form, data):
         else:
             # see if astropy can figure out the units
             coord = SkyCoord(ra, dec)
-    except ValueError:
+    except (ValueError, u.core.UnitsError):
         try:
             # if that hasn't worked, try to assume hours/degrees
             coord = SkyCoord(ra, dec, unit=("hour", "deg"))
@@ -75,6 +75,10 @@ def parse_galcoord_and_validate(form, data):
         raise ValidationError(
             "Unable to parse input coordinate = '{},{}': {}".format(gal_l, gal_b, e)
         )
+    except u.core.UnitsError as e:
+        raise ValidationError(
+            "Unable to parse input coordinate = '{},{}': {}".format(ra, dec, e)
+        )
     return coord
 
 
@@ -93,7 +97,7 @@ class SearchForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinate (RA Dec or l b)",
+        "Search Coordinate (RA Dec)",
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
     radius = DecimalField(
@@ -123,7 +127,7 @@ class DMForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinate (RA Dec)",
+        "Search Coordinate (RA Dec or l b)",
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
     d_or_dm = DecimalField("Distance (pc) or DM", validators=[InputRequired()])
