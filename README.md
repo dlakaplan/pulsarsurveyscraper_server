@@ -1,7 +1,7 @@
 # pulsarsurveyscraper_server
 
 ## requirements:
-* flask, flask_wtf, astropy, pandas, scipy
+* flask, flask_wtf, astropy, pandas, scipy, bs4
 * [PyGEDM](https://github.com/telegraphic/pygedm): for DM models
 * [pulsarsurveyscraper](https://github.com/dlakaplan/pulsarsurveyscraper)
 
