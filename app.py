@@ -6,6 +6,7 @@ from forms import (
     parse_galcoord_and_validate,
 )
 
+import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 import pandas
@@ -97,6 +98,7 @@ def Search():
         result = pulsar_table.search(
             coord, radius=float(form.radius.data) * u.deg, DM=DM, DM_tolerance=DMtol
         )
+        result["P"][result["P"] < 0] = np.nan
         # make a nice string for output
         coord_string = "Searching {:.1f}deg around RA,Dec {} = {}d,{}d ...".format(
             float(form.radius.data),
@@ -119,6 +121,9 @@ def Search():
         )
         # add units to the distance column
         html_table = html_table.replace("Distance", "Distance (deg)")
+        # and the period column
+        html_table = html_table.replace("P", "P (ms)")
+
         # reformat a bit to get links to the survey sites
         for survey in pulsarsurveyscraper.Surveys:
             html_table = html_table.replace(
