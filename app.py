@@ -122,7 +122,7 @@ def Search():
         # add units to the distance column
         html_table = html_table.replace("Distance", "Distance (deg)")
         # and the period column
-        html_table = html_table.replace("P", "P (ms)")
+        # html_table = html_table.replace("P", "P (ms)")
 
         # reformat a bit to get links to the survey sites
         for survey in pulsarsurveyscraper.Surveys:
