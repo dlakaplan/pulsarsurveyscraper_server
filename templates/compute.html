@@ -20,10 +20,9 @@
  
       <p>
  
-          <!-- {{form.coordinates.label}} -->
-<label for="coordinates">{{form.coordinates.label|safe}}</label>
 {{form.coordinates(size=32)}}
-{{form.lb_or_radec(class='toggle', **{'data-toggle':"toggle",'data-off':"Galactic", 'data-on':"Equatorial", 'data-onstyle':"success", 'data-offstyle':"primary"})}}
+{{form.lb_or_radec(class='toggle',
+**{'data-toggle':"toggle",'data-off':'Galactic (<i id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>', 'data-on':"Equatorial (α δ)", 'data-onstyle':"success", 'data-offstyle':"primary"})}}
            {% for error in form.coordinates.errors %}
           <span style="color:red;">
  
@@ -40,14 +39,9 @@
       </p> 
       <p>
  
-          {{form.d_or_dm.label}}
-          {{form.d_or_dm(size=32)}}
-{% for subfield in form.d_or_dm_selector %}
-    <tr>
-        <td>{{ subfield }}</td>
-        <td>{{ subfield.label }}</td>
-    </tr>
-{% endfor %}
+{{form.d_or_dm(size=32)}}
+{{form.d_or_dm_selector(class='toggle',
+**{'data-toggle':"toggle",'data-off':"DM (pc/cc)", 'data-on':"Distance (pc)", 'data-onstyle':"success", 'data-offstyle':"primary"})}}
           {% for error in form.d_or_dm.errors %}
           <span style="color:red;">
  
@@ -58,12 +52,8 @@
       </p>
  
       <p>
- {% for subfield in form.model_selector %}
-    <tr>
-        <td>{{ subfield }}</td>
-        <td>{{ subfield.label }}</td>
-    </tr>
-{% endfor %}
+{{form.model_selector(class='toggle',
+**{'data-toggle':"toggle",'data-off':"YMW16", 'data-on':"NE2001", 'data-onstyle':"success", 'data-offstyle':"primary"})}}
 
       </p>
  

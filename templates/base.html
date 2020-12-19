@@ -49,19 +49,15 @@ $("label[for='coordinates']").html('α δ');
 $('#coord-label').html('<i id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b</i>');
 $("label[for='coordinates']").html('<i id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b</i>');
 }
-<!-- var current_status = $('#coord-status').text(); -->
-var current_status = $(this).prop('checked');
-<!-- $.ajax({ -->
-<!--     url: "/get_coordtoggled_status", -->
-<!--     type: "get", -->
-<!--      data: {status: current_status}, -->
-<!--      success: function(response) { -->
-<!--       $("#coord-status").html(response); -->
-<!--      }, -->
-<!--      error: function(xhr) { -->
-<!--       //Do Something to handle error -->
-<!--      } -->
-<!--    }); -->
+});
+$('#input-toggle').change(function() {
+if ($(this).prop('checked')) {
+$('#input-label').html('Distance (pc)');
+$("label[for='input']").html('Distance (pc)');
+} else {
+$('#coord-label').html('DM');
+$("label[for='input']").html('DM');
+}
 });
 });
 </script>

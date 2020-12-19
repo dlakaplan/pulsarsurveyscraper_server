@@ -131,17 +131,23 @@ class DMForm(FlaskForm):
 
     coordinates = StringField(
         radec_label,
-    #"Search Coordinate (RA Dec or l b)",
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
-    d_or_dm = DecimalField("Distance (pc) or DM", validators=[InputRequired()])
-    d_or_dm_selector = RadioField(
-        "Input is Distance or DM",
-        default="distance",
-        choices=[("distance", "Distance"), ("dm", "DM")],
-        validators=[InputRequired()],
+    d_or_dm = DecimalField("Distance (pc)", validators=[InputRequired()])
+    
+    # d_or_dm_selector = RadioField(
+    #     "Input is Distance or DM",
+    #     default="distance",
+    #     choices=[("distance", "Distance"), ("dm", "DM")],
+    #     validators=[InputRequired()],
+    # )
+
+    d_or_dm_selector = BooleanField(
+        "Distance or DM",
+        id="input-toggle",
+        validators=[],
     )
-    # lb_or_radec_selector = RadioField(
+        # lb_or_radec_selector = RadioField(
     #     "Equatorial (RA,Dec) or Galactic (l,b)",
     #     default="equatorial",
     #     choices=[("equatorial", "Equatorial (RA,Dec)"), ("galactic", "Galactic (l,b)")],
@@ -158,5 +164,8 @@ class DMForm(FlaskForm):
         choices=[("ne2001", "NE2001"), ("ymw16", "YMW16")],
         validators=[InputRequired()],
     )
+    model_selector = BooleanField(
+        "Model",validators=[],
+        id="model-toggle")
     compute = SubmitField(label="Compute")
     clear = SubmitField(label="Clear")

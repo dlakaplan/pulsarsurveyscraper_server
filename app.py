@@ -236,31 +236,33 @@ def Compute():
 
     # if the button has been pressed and the input is valid:
     if form.validate_on_submit():
-        print(form.lb_or_radec.data)
+        if form.model_selector.data:
+            model = "NE2001"
+        else:
+            model = "YMW16"
         # use the validation routine
         # to parse the coordinates
         if form.lb_or_radec.data:
-            form.coordinates.label = radec_label
             coord = parse_equcoord_and_validate(None, form.coordinates)
         else:
-            form.coordinates.label = lb_label
             coord = parse_galcoord_and_validate(None, form.coordinates)
-        if form.d_or_dm_selector.data == "dm":
+        if not form.d_or_dm_selector.data:
             DM = float(form.d_or_dm.data)
             distance, _ = pygedm.dm_to_dist(
-                coord.galactic.l, coord.galactic.b, DM, method=form.model_selector.data
+                coord.galactic.l, coord.galactic.b, DM, method=model
             )
-        elif form.d_or_dm_selector.data == "distance":
+        else:
             distance = float(form.d_or_dm.data) * u.pc
             DM, _ = pygedm.dist_to_dm(
                 coord.galactic.l,
                 coord.galactic.b,
                 distance,
-                method=form.model_selector.data,
+                method=model,
             )
 
         # or, clear the form if desired
         if form.clear.data:
+
             return redirect(url_for("Compute"))
 
         # make a nice string for output
@@ -288,19 +290,17 @@ def Compute():
                 coord.icrs.ra.to_string(decimal=True),
                 coord.icrs.dec.to_string(decimal=True, alwayssign=True),
             )
-        if form.d_or_dm_selector.data == "dm":
-            result_string = "For DM = {:.1f} pc/cc, find distance = {:.1f} pc".format(
-                DM, distance.to(u.pc).value
+        if not form.d_or_dm_selector.data:
+            result_string = "For DM = {:.1f} pc/cc, find distance = {:.1f} pc with the {} model".format(
+                DM, distance.to(u.pc).value, model
             )
-        elif form.d_or_dm_selector.data == "distance":
+        else:
             for model, model_label in form.model_selector.choices:
                 if model == form.model_selector.data:
                     break
             result_string = "For distance = {:.1f} pc, find DM = {:.1f} pc/cc with the {} model".format(
-                distance.to(u.pc).value, DM.value, model_label
+                distance.to(u.pc).value, DM.value, model
             )
-        print(form.coordinates.label)
-        print(form.lb_or_radec.data)
         return render_template(
             "compute.html",
             form=form,
