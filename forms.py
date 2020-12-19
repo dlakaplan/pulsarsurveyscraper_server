@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, DecimalField, SubmitField, RadioField
+from wtforms import StringField, DecimalField, SubmitField, RadioField, BooleanField
 from wtforms.validators import InputRequired, ValidationError, Optional
 import re
 from astropy.coordinates import SkyCoord
@@ -137,12 +137,17 @@ class DMForm(FlaskForm):
         choices=[("distance", "Distance"), ("dm", "DM")],
         validators=[InputRequired()],
     )
-    lb_or_radec_selector = RadioField(
-        "Equatorial (RA,Dec) or Galactic (l,b)",
-        default="equatorial",
-        choices=[("equatorial", "Equatorial (RA,Dec)"), ("galactic", "Galactic (l,b)")],
-        validators=[InputRequired()],
+    # lb_or_radec_selector = RadioField(
+    #     "Equatorial (RA,Dec) or Galactic (l,b)",
+    #     default="equatorial",
+    #     choices=[("equatorial", "Equatorial (RA,Dec)"), ("galactic", "Galactic (l,b)")],
+    #     # validators=[InputRequired()],
+    #     validators=[],
+    # )
+    lb_or_radec = BooleanField(
+        "Equatorial or Galactic", validators=[], id="coord-toggle",
     )
+
     model_selector = RadioField(
         "DM Model",
         default="ne2001",

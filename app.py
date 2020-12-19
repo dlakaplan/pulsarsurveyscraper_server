@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, url_for, redirect
+import flask
 from forms import (
     SearchForm,
     DMForm,
@@ -31,6 +32,8 @@ app.config.from_object("server_config")
 # this needs the directory where the data are stored
 # do it at the top level so that it's accessible within the functions below
 pulsar_table = pulsarsurveyscraper.PulsarTable(directory=app.config["DATA_DIR"],)
+
+coordinate_type = "equatorial"
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -224,11 +227,13 @@ def Compute():
 
     # if the button has been pressed and the input is valid:
     if form.validate_on_submit():
+        print("coordinate = ", coordinate_type)
+        print(form.lb_or_radec.data)
         # use the validation routine
         # to parse the coordinates
-        if form.lb_or_radec_selector.data == "equatorial":
+        if form.lb_or_radec.data:
             coord = parse_equcoord_and_validate(None, form.coordinates)
-        elif form.lb_or_radec_selector.data == "galactic":
+        else:
             coord = parse_galcoord_and_validate(None, form.coordinates)
         if form.d_or_dm_selector.data == "dm":
             DM = float(form.d_or_dm.data)
@@ -249,7 +254,7 @@ def Compute():
             return redirect(url_for("Compute"))
 
         # make a nice string for output
-        if form.lb_or_radec_selector.data == "equatorial":
+        if form.lb_or_radec.data:
             coord_string = "Computing for RA,Dec {} = {}d,{}d".format(
                 coord.icrs.to_string("hmsdms", sep=":"),
                 coord.icrs.ra.to_string(decimal=True),
@@ -292,6 +297,15 @@ def Compute():
         return redirect(url_for("Compute"))
 
     return render_template("compute.html", form=form)
+
+
+@app.route("/get_coordtoggled_status")
+def toggled_status():
+
+    coordinate_status = flask.request.args.get("status")
+    # coordinate_type = "equatorial" if coordinate_status == "true" else "galactic"
+    # form.lb_or_radec_selector.data = coordinate_type
+    return coordinate_type
 
 
 # run flask app

@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
- 
+
+
  
 {% block title %} DM Model {% endblock %}
  
@@ -19,21 +20,23 @@
  
       <p>
  
-          {{form.coordinates.label}}
-          {{form.coordinates(size=32)}}
+          <!-- {{form.coordinates.label}} -->
+<span id="coord-label">α δ</span>{{form.coordinates(size=32)}}
+<input type="checkbox" id="coord-toggle" >
+{{form.lb_or_radec(class='toggle', **{'data-toggle':"toggle",'data-off':"Galactic", 'data-on':"Equatorial", 'data-onstyle':"success", 'data-offstyle':"primary"})}}
 
-{% for subfield in form.lb_or_radec_selector %}
-    <tr>
-        <td>{{ subfield }}</td>
-        <td>{{ subfield.label }}</td>
-    </tr>
-{% endfor %}
-           {% for error in form.coordinates.errors %}
-          <span style="color:red;">
+<!-- {% for subfield in form.lb_or_radec_selector %} -->
+<!--     <tr> -->
+<!--         <td>{{ subfield }}</td> -->
+<!--         <td>{{ subfield.label }}</td> -->
+<!--     </tr> -->
+<!-- {% endfor %} -->
+<!--            {% for error in form.coordinates.errors %} -->
+<!--           <span style="color:red;"> -->
  
-              {{error}}
-          </span>
-          {% endfor %}
+<!--               {{error}} -->
+<!--           </span> -->
+<!--           {% endfor %} -->
       </p> 
       <p>
  
@@ -96,3 +99,4 @@
 
  
 {% endblock %}
+

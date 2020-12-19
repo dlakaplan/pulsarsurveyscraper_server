@@ -15,16 +15,22 @@
  
  
 <!-- JS, Popper.js, and jQuery -->
-<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<!-- <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script> -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js">
 <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
- 
+
+<!-- Bootstrap toggle -->
+<link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+      <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+
+
+
+    <!-- https://stackoverflow.com/questions/51057966/flask-toggle-button-with-dynamic-label -->
 
 <div class="container">
 <a href="search">Pulsar Survey Scraper</a> | <a href="compute">DM Model</a>
 </div>
-
-<!-- https://stackoverflow.com/questions/18600031/changing-the-active-class-of-a-link-with-the-twitter-bootstrap-css-in-python-fla -->
 
 {% block body %}
  
@@ -33,6 +39,30 @@
  
  
  
- 
+ <script>
+$( document ).ready(function() {
+$('#coord-toggle').change(function() {
+if ($(this).prop('checked')) {
+$('#coord-label').html('α δ');
+} else {
+$('#coord-label').html('<i id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b</i>');
+}
+<!-- var current_status = $('#coord-status').text(); -->
+var current_status = $(this).prop('checked');
+$.ajax({
+    url: "/get_coordtoggled_status",
+    type: "get",
+     data: {status: current_status},
+     success: function(response) {
+      $("#coord-status").html(response);
+     },
+     error: function(xhr) {
+      //Do Something to handle error
+     }
+   });
+});
+});
+</script>
+
 </body>
 </html>
