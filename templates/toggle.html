@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+
+ 
+{% block title %} DM Model {% endblock %}
+ 
+{% block body %}
+
+
+<span id="coord-label">α δ</span>{{form.coordinates(size=32)}}
+<input type="checkbox" id="coord-toggle" class='toggle' checked data-toggle="toggle"
+  data-off="Galactic" data-on="Equatorial" data-onstyle="success" data-offstyle="primary" >
+<!-- <div class='coord-status'>Galactic</div> -->
+    <div class='coord-status' id='coord-status'>Toggled</div>
+    <div class='other-status' id='other-status'>Toggled</div>
+    <input type="checkbox" id="other-toggle" class='toggle' checked data-toggle="toggle"
+  data-on="A" data-off="B" >
+<div id="console-event"></div>
+
+
+<!-- https://stackoverflow.com/questions/51057966/flask-toggle-button-with-dynamic-label -->
+
+{% endblock %}
