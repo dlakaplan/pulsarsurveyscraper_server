@@ -20,11 +20,11 @@
  
 
 {{form.coordinates(size=32)}}
-{{form.lb_or_radec(class='toggle',
+{{form.lb_or_radec(class='toggle on',
 **{'data-toggle':"toggle",'data-off':'Galactic (<i
 id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
 'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
-'data-offstyle':"primary",'data-width': "20%"})}}
+'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
 {% for error in form.coordinates.errors %}
           <span style="color:red;">
  
@@ -39,11 +39,14 @@ id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
 <!--     </tr> -->
 <!-- {% endfor %} -->
  
-<br>
+<br><br>
 
 {{form.d_or_dm(size=32)}}
 {{form.d_or_dm_selector(class='toggle',
-**{'data-toggle':"toggle",'data-off':"DM (pc/cc)", 'data-on':"Distance (pc)", 'data-onstyle':"success", 'data-offstyle':"primary",'data-width': "20%"})}}
+**{'data-toggle':"toggle",'data-off':"DM (pc/cc)", 'data-on':"Distance
+(pc)",
+'data-onstyle':"success",'data-offstyle':"primary",'data-width':
+"20%",'data-height': "5%","data-size": "normal"})}}
           {% for error in form.d_or_dm.errors %}
           <span style="color:red;">
  
@@ -80,13 +83,12 @@ id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
     <div class="container">
     <hr>
     Based on <a href="https://github.com/FRBs/pygedm">PyGEDM</a>,
-    which itself uses <a
+    which  uses <a
     href="https://ui.adsabs.harvard.edu/abs/2017ApJ...835...29Y/abstract">Yao,
     Manchester and Wang (2017; YMW16)</a> and <a
     href="https://ui.adsabs.harvard.edu/abs/2002astro.ph..7156C/abstract">Cordes
     and Lazio (2002; NE2001)</a>.
     </div>
 
- 
 {% endblock %}
 
