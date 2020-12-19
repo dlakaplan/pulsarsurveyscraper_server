@@ -265,7 +265,7 @@ def Compute():
 
         # make a nice string for output
         if form.lb_or_radec.data:
-            coord_string = "Computing for {} {} = {}d,{}d".format(
+            coord_string = "Computing for {} = {} = {}d,{}d".format(
                 radec_label.replace(" ", ","),
                 coord.icrs.to_string("hmsdms", sep=":"),
                 coord.icrs.ra.to_string(decimal=True),

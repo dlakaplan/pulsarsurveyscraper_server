@@ -22,11 +22,6 @@
  
           <!-- {{form.coordinates.label}} -->
 <label for="coordinates">{{form.coordinates.label|safe}}</label>
-{% if form.lb_or_radec %}
-<span id="coord-label">α δ</span>
-{% else %}
-<span id="coord-label"><i id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b</i></span>
-{% endif %}
 {{form.coordinates(size=32)}}
 {{form.lb_or_radec(class='toggle', **{'data-toggle':"toggle",'data-off':"Galactic", 'data-on':"Equatorial", 'data-onstyle':"success", 'data-offstyle':"primary"})}}
            {% for error in form.coordinates.errors %}
