@@ -5,6 +5,8 @@ from forms import (
     DMForm,
     parse_equcoord_and_validate,
     parse_galcoord_and_validate,
+    lb_label,
+    radec_label,
 )
 
 import numpy as np
@@ -22,7 +24,6 @@ Among others, I used these tutorials:
 https://codeloop.org/flask-tutorial-flask-forms-with-flask-wtf/
 """
 
-
 # create the Flask object
 app = Flask(__name__)
 
@@ -31,7 +32,9 @@ app.config.from_object("server_config")
 # instantiate the pulsar survey table
 # this needs the directory where the data are stored
 # do it at the top level so that it's accessible within the functions below
-pulsar_table = pulsarsurveyscraper.PulsarTable(directory=app.config["DATA_DIR"],)
+pulsar_table = pulsarsurveyscraper.PulsarTable(
+    directory=app.config["DATA_DIR"],
+)
 
 coordinate_type = "equatorial"
 
@@ -110,8 +113,10 @@ def Search():
             coord.dec.to_string(decimal=True, alwayssign=True),
         )
         if DM is not None:
-            coord_string += "<br>Also requiring DM with +/-{:.1f} of {:.1f} pc/cm**2".format(
-                DMtol, DM
+            coord_string += (
+                "<br>Also requiring DM with +/-{:.1f} of {:.1f} pc/cm**2".format(
+                    DMtol, DM
+                )
             )
 
         # go from astropy Table -> pandas dataframe -> HTML table
@@ -119,7 +124,10 @@ def Search():
         # turn the "PSR" column from bytestring to string
         df["PSR"] = df["PSR"].str.decode("utf-8")
         html_table = df.to_html(
-            formatters={"P": lambda x: "%.2f" % x, "Distance": lambda x: "%.2f" % x,},
+            formatters={
+                "P": lambda x: "%.2f" % x,
+                "Distance": lambda x: "%.2f" % x,
+            },
             justify="left",
         )
 
@@ -144,7 +152,8 @@ def Search():
             # add links to survey column
             print(cols[5].text, pulsarsurveyscraper.Surveys[cols[5].text]["url"])
             link_tag = soup.new_tag(
-                "a", href=pulsarsurveyscraper.Surveys[cols[5].text]["url"],
+                "a",
+                href=pulsarsurveyscraper.Surveys[cols[5].text]["url"],
             )
             link_tag.string = cols[5].text
             cols[5].string = ""
@@ -227,13 +236,14 @@ def Compute():
 
     # if the button has been pressed and the input is valid:
     if form.validate_on_submit():
-        print("coordinate = ", coordinate_type)
         print(form.lb_or_radec.data)
         # use the validation routine
         # to parse the coordinates
         if form.lb_or_radec.data:
+            form.coordinates.label = radec_label
             coord = parse_equcoord_and_validate(None, form.coordinates)
         else:
+            form.coordinates.label = lb_label
             coord = parse_galcoord_and_validate(None, form.coordinates)
         if form.d_or_dm_selector.data == "dm":
             DM = float(form.d_or_dm.data)
@@ -255,21 +265,25 @@ def Compute():
 
         # make a nice string for output
         if form.lb_or_radec.data:
-            coord_string = "Computing for RA,Dec {} = {}d,{}d".format(
+            coord_string = "Computing for {} {} = {}d,{}d".format(
+                radec_label.replace(" ", ","),
                 coord.icrs.to_string("hmsdms", sep=":"),
                 coord.icrs.ra.to_string(decimal=True),
                 coord.icrs.dec.to_string(decimal=True, alwayssign=True),
             )
-            coord_string += "<br>= l,b = {}d,{}d ...".format(
+            coord_string += "<br>= {} = {}d,{}d ...".format(
+                lb_label.replace(" ", ","),
                 coord.galactic.l.to_string(decimal=True),
                 coord.galactic.b.to_string(decimal=True),
             )
         else:
-            coord_string = "Computing for l,b = {}d,{}d ...".format(
+            coord_string = "Computing for {} = {}d,{}d ...".format(
+                lb_label.replace(" ", ","),
                 coord.galactic.l.to_string(decimal=True),
                 coord.galactic.b.to_string(decimal=True),
             )
-            coord_string += "<br>= RA,Dec {} = {}d,{}d".format(
+            coord_string += "<br>= {} {} = {}d,{}d".format(
+                radec_label.replace(" ", ","),
                 coord.icrs.to_string("hmsdms", sep=":"),
                 coord.icrs.ra.to_string(decimal=True),
                 coord.icrs.dec.to_string(decimal=True, alwayssign=True),
@@ -285,6 +299,8 @@ def Compute():
             result_string = "For distance = {:.1f} pc, find DM = {:.1f} pc/cc with the {} model".format(
                 distance.to(u.pc).value, DM.value, model_label
             )
+        print(form.coordinates.label)
+        print(form.lb_or_radec.data)
         return render_template(
             "compute.html",
             form=form,

@@ -7,6 +7,9 @@ from astropy import units as u
 
 import pulsarsurveyscraper
 
+radec_label = "α δ"
+lb_label = "<i>&#x2113</i> <i>b</i>"
+
 
 def parse_equcoord_and_validate(form, data):
     """
@@ -127,7 +130,8 @@ class DMForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinate (RA Dec or l b)",
+        radec_label,
+    #"Search Coordinate (RA Dec or l b)",
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
     d_or_dm = DecimalField("Distance (pc) or DM", validators=[InputRequired()])
