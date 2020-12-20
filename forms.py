@@ -7,7 +7,7 @@ from astropy import units as u
 
 import pulsarsurveyscraper
 
-radec_label = "α δ"
+radec_label = "&#x3B1 &#x3B4"
 lb_label = "<i>&#x2113</i> <i>b</i>"
 
 
@@ -91,6 +91,7 @@ class SearchForm(FlaskForm):
 
     contents:
         coordinates (string): gets parsed and validated using parse_coord_and_validate
+        lb_or_radec (bool): whether coordinates are equatorial or galactic
         radius (decimal)
         dm (decimal): optional
         dmtol (decimal): optional
@@ -100,9 +101,16 @@ class SearchForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinate (RA Dec)",
+        "Search Coordinates",
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
+    lb_or_radec = BooleanField(
+        "Equatorial or Galactic",
+        validators=[],
+        id="coord-toggle",
+        default=True,
+    )
+
     radius = DecimalField(
         "Search Radius (deg)", default=5, validators=[InputRequired()]
     )
@@ -134,28 +142,16 @@ class DMForm(FlaskForm):
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
     d_or_dm = DecimalField("Distance (pc)", validators=[InputRequired()])
-    
-    # d_or_dm_selector = RadioField(
-    #     "Input is Distance or DM",
-    #     default="distance",
-    #     choices=[("distance", "Distance"), ("dm", "DM")],
-    #     validators=[InputRequired()],
-    # )
-
     d_or_dm_selector = BooleanField(
         "Distance or DM",
         id="input-toggle",
         validators=[],
     )
-        # lb_or_radec_selector = RadioField(
-    #     "Equatorial (RA,Dec) or Galactic (l,b)",
-    #     default="equatorial",
-    #     choices=[("equatorial", "Equatorial (RA,Dec)"), ("galactic", "Galactic (l,b)")],
-    #     # validators=[InputRequired()],
-    #     validators=[],
-    # )
     lb_or_radec = BooleanField(
-        "Equatorial or Galactic", validators=[], id="coord-toggle",
+        "Equatorial or Galactic",
+        validators=[],
+        default=True,
+        id="coord-toggle",
     )
 
     model_selector = RadioField(
@@ -164,8 +160,6 @@ class DMForm(FlaskForm):
         choices=[("ne2001", "NE2001"), ("ymw16", "YMW16")],
         validators=[InputRequired()],
     )
-    model_selector = BooleanField(
-        "Model",validators=[],
-        id="model-toggle")
+    model_selector = BooleanField("Model", validators=[], id="model-toggle")
     compute = SubmitField(label="Compute")
     clear = SubmitField(label="Clear")

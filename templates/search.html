@@ -20,7 +20,12 @@
  
           {{form.coordinates.label}}
           {{form.coordinates(size=32)}}
-           {% for error in form.coordinates.errors %}
+{{form.lb_or_radec(class='toggle on',
+**{'data-toggle':"toggle",'data-off':'Galactic (<i
+id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
+'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
+'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
+{% for error in form.coordinates.errors %}
           <span style="color:red;">
  
               {{error}}

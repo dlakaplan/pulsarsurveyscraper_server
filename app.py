@@ -19,6 +19,10 @@ from bs4 import BeautifulSoup, Tag
 import pulsarsurveyscraper
 import pygedm
 
+degree_symbol = "\N{DEGREE SIGN}"
+arcmin_symbol = "\N{PRIME}"
+arcsec_symbol = "\N{DOUBLE PRIME}"
+
 """
 Among others, I used these tutorials:
 https://codeloop.org/flask-tutorial-flask-forms-with-flask-wtf/
@@ -37,6 +41,54 @@ pulsar_table = pulsarsurveyscraper.PulsarTable(
 )
 
 coordinate_type = "equatorial"
+
+
+def format_lb(coord):
+    return "{}{}".format(
+        coord.galactic.l.to_string(
+            decimal=True,
+            precision=3,
+        ),
+        degree_symbol,
+    ), "{}{}".format(
+        coord.galactic.b.to_string(
+            decimal=True,
+            alwayssign=True,
+            precision=3,
+        ),
+        degree_symbol,
+    )
+
+
+def format_radec_decimal(coord):
+    return "{}{}".format(
+        coord.icrs.ra.to_string(
+            decimal=True,
+            precision=3,
+        ),
+        degree_symbol,
+    ), "{}{}".format(
+        coord.icrs.dec.to_string(decimal=True, alwayssign=True, precision=3),
+        degree_symbol,
+    )
+
+
+def format_radec(coord):
+    sra = coord.icrs.ra.to_string(u.hour, decimal=False, sep="hms", precision=2)
+    sdec = coord.icrs.dec.to_string(
+        u.degree, decimal=False, sep="dms", precision=1, pad=True, alwayssign=True
+    )
+    sra = (
+        sra.replace("s", "<sup>s</sup>")
+        .replace("h", "<sup>h</sup>")
+        .replace("m", "<sup>m</sup>")
+    )
+    sdec = (
+        sdec.replace("d", degree_symbol)
+        .replace("m", arcmin_symbol)
+        .replace("s", arcsec_symbol)
+    )
+    return "{}, {}".format(sra, sdec)
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -58,7 +110,10 @@ def Search():
     if form.validate_on_submit():
         # use the validation routine
         # to parse the coordinates
-        coord = parse_equcoord_and_validate(None, form.coordinates)
+        if form.lb_or_radec.data:
+            coord = parse_equcoord_and_validate(None, form.coordinates)
+        else:
+            coord = parse_galcoord_and_validate(None, form.coordinates)
         # figure out if we need to deal with DM as well
         if form.dm.data is not None:
             DM = float(form.dm.data)
@@ -77,8 +132,8 @@ def Search():
                 return redirect(
                     url_for(
                         "API",
-                        ra=coord.ra.deg,
-                        dec=coord.dec.deg,
+                        ra=coord.icrs.ra.deg,
+                        dec=coord.icrs.dec.deg,
                         radius=float(form.radius.data),
                     )
                 )
@@ -86,8 +141,8 @@ def Search():
                 return redirect(
                     url_for(
                         "API",
-                        ra=coord.ra.deg,
-                        dec=coord.dec.deg,
+                        ra=coord.icrs.ra.deg,
+                        dec=coord.icrs.dec.deg,
                         radius=float(form.radius.data),
                         dm=DM,
                         dmtol=DMtol,
@@ -106,16 +161,27 @@ def Search():
         )
         result["P"][result["P"] < 0] = np.nan
         # make a nice string for output
-        coord_string = "Searching {:.1f}deg around RA,Dec {} = {}d,{}d ...".format(
-            float(form.radius.data),
-            coord.to_string("hmsdms", sep=":"),
-            coord.ra.to_string(decimal=True),
-            coord.dec.to_string(decimal=True, alwayssign=True),
-        )
+        if form.lb_or_radec.data:
+            coord_string = "Searching <strong>{:.1f}{}</strong> around <strong>{} = {} = {}, {}</strong> ...".format(
+                float(form.radius.data),
+                degree_symbol,
+                radec_label.replace(" ", ","),
+                format_radec(coord),
+                *format_radec_decimal(coord),
+            )
+        else:
+            coord_string = "Searching <strong>{:.1f}{}</strong> around <strong>{} = {},{}</strong> ...".format(
+                float(form.radius.data),
+                degree_symbol,
+                lb_label.replace(" ", ", "),
+                *format_lb(coord),
+            )
+
         if DM is not None:
             coord_string += (
-                "<br>Also requiring DM with +/-{:.1f} of {:.1f} pc/cm**2".format(
-                    DMtol, DM
+                "<br>Also requiring DM = <strong>{:.1f}+/-{:.1f} pc/cc</strong>".format(
+                    DM,
+                    DMtol,
                 )
             )
 
@@ -150,7 +216,6 @@ def Search():
         for row in rows[1:]:
             cols = row.find_all("td")
             # add links to survey column
-            print(cols[5].text, pulsarsurveyscraper.Surveys[cols[5].text]["url"])
             link_tag = soup.new_tag(
                 "a",
                 href=pulsarsurveyscraper.Surveys[cols[5].text]["url"],
@@ -262,36 +327,30 @@ def Compute():
 
         # or, clear the form if desired
         if form.clear.data:
-
             return redirect(url_for("Compute"))
 
         # make a nice string for output
         if form.lb_or_radec.data:
-            coord_string = "Computing for {} = {} = {}d,{}d".format(
+            coord_string = "Computing for <strong>{} = {} = {}, {}</strong>".format(
                 radec_label.replace(" ", ","),
-                coord.icrs.to_string("hmsdms", sep=":"),
-                coord.icrs.ra.to_string(decimal=True),
-                coord.icrs.dec.to_string(decimal=True, alwayssign=True),
+                format_radec(coord),
+                *format_radec_decimal(coord),
             )
-            coord_string += "<br>= {} = {}d,{}d ...".format(
+            coord_string += "<br>= {} = {}, {} ...".format(
                 lb_label.replace(" ", ","),
-                coord.galactic.l.to_string(decimal=True),
-                coord.galactic.b.to_string(decimal=True),
+                *format_lb(coord),
             )
         else:
-            coord_string = "Computing for {} = {}d,{}d ...".format(
-                lb_label.replace(" ", ","),
-                coord.galactic.l.to_string(decimal=True),
-                coord.galactic.b.to_string(decimal=True),
+            coord_string = "Computing for <strong>{} = {}, {}</strong>".format(
+                lb_label.replace(" ", ","), *format_lb(coord)
             )
-            coord_string += "<br>= {} {} = {}d,{}d".format(
+            coord_string += "<br>= {} = {} = {}, {} ...".format(
                 radec_label.replace(" ", ","),
-                coord.icrs.to_string("hmsdms", sep=":"),
-                coord.icrs.ra.to_string(decimal=True),
-                coord.icrs.dec.to_string(decimal=True, alwayssign=True),
+                format_radec(coord),
+                *format_radec_decimal(coord),
             )
         if not form.d_or_dm_selector.data:
-            result_string = "For DM = {:.1f} pc/cc, find distance = {:.1f} pc with the {} model".format(
+            result_string = "For <strong>DM = {:.1f} pc/cc</strong>, find <strong>distance = {:.1f} pc</strong> with the {} model".format(
                 DM, distance.to(u.pc).value, model
             )
         else:
