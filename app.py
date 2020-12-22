@@ -210,7 +210,7 @@ def Search():
 
         # go from astropy Table -> pandas dataframe -> HTML table
         df = result.to_pandas()
-        if not isinstance(df["PSR"][0], str):
+        if len(df) > 0 and not isinstance(df["PSR"][0], str):
             # turn the "PSR" column from bytestring to string
             df["PSR"] = df["PSR"].str.decode("utf-8")
         html_table = df.to_html(
