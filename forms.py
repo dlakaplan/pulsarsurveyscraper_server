@@ -61,12 +61,14 @@ def parse_galcoord_and_validate(form, data):
     if it can parse, returns astropy SkyCoord object
     if it cannot, raises ValidationError
     """
-
-    # divide the string into equal l, b pieces
-    c = data.data.split()
-    l = len(c)
-    gal_l = " ".join(c[: (l // 2)])
-    gal_b = " ".join(c[(l // 2) :])
+    if "," in data.data:
+        gal_l, gal_b = map(str.strip, data.data.split(","))
+    else:
+        # divide the string into equal l, b pieces
+        c = data.data.split()
+        l = len(c)
+        gal_l = " ".join(c[: (l // 2)])
+        gal_b = " ".join(c[(l // 2) :])
 
     try:
         if (re.search(r"[^\d.+\-]", gal_l) is None) and (
