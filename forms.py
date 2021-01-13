@@ -21,10 +21,13 @@ def parse_equcoord_and_validate(form, data):
     """
 
     # divide the string into equal RA, Dec pieces
-    c = data.data.split()
-    l = len(c)
-    ra = " ".join(c[: (l // 2)])
-    dec = " ".join(c[(l // 2) :])
+    if "," in data.data:
+        ra, dec = map(str.strip, data.data.split(","))
+    else:
+        c = data.data.split()
+        l = len(c)
+        ra = " ".join(c[: (l // 2)])
+        dec = " ".join(c[(l // 2) :])
 
     try:
         if (re.search(r"[^\d.+\-]", ra) is None) and (
