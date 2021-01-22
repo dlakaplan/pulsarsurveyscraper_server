@@ -398,10 +398,7 @@ def Compute():
                 DM, distance.to(u.pc).value, model
             )
         else:
-            for model, model_label in form.model_selector.choices:
-                if model == form.model_selector.data:
-                    break
-            result_string = "For distance = {:.1f} pc, find DM = {:.1f} pc/cc with the {} model".format(
+            result_string = "For <strong>distance = {:.1f} pc</strong>, find <strong>DM = {:.1f} pc/cc</strong> with the {} model".format(
                 distance.to(u.pc).value, DM.value, model
             )
         return render_template(
