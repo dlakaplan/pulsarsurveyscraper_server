@@ -415,6 +415,8 @@ def API():
             d = float(request.args["d"])*u.pc
         if "dmmodel" in request.args:
             dmmodel = request.args["dmmodel"].lower()
+            if not dmmodel in ['ymw16','ne2001']:
+                return "Error: '{}' is not a valid DM model".format(dmmodel)
             result['dmmodel'] = dmmodel
 
         if dm is not None:
