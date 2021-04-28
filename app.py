@@ -309,19 +309,19 @@ def API():
 
     if "type" in request.args:
         type = request.args["type"].lower()
-    
+
     # search for pulsars given a position
     if type == "search":
         # default values
         radius = 5
         dm = None
         dmtol = 10
-        
+
         ra = None
         dec = None
         l = None
         b = None
-        
+
         if "ra" in request.args:
             ra = float(request.args["ra"])
         if "dec" in request.args:
@@ -364,15 +364,15 @@ def API():
     # compute DM at a distance
     elif type == "compute":
         dm = None
-        d = None        
+        d = None
         d = None
         dmmodel = "ne2001"
-        
+
         ra = None
         dec = None
         l = None
         b = None
-        
+
         if "ra" in request.args:
             ra = float(request.args["ra"])
         if "dec" in request.args:
@@ -389,17 +389,25 @@ def API():
                 coord = SkyCoord(ra * u.deg, dec * u.deg)
             except ValueError as e:
                 return "Unable to parse RA,Dec = '{},{}': {}".format(ra, dec, e)
-            result = {"searchra": {"display_name": "Search RA (deg)", "value": coord.ra.value},
-                      "searchdec": {"display_name": "Search Dec (deg)", "value": coord.dec.value}
-                      }
+            result = {
+                "searchra": {
+                    "display_name": "Search RA (deg)",
+                    "value": coord.ra.value,
+                },
+                "searchdec": {
+                    "display_name": "Search Dec (deg)",
+                    "value": coord.dec.value,
+                },
+            }
         elif l is not None and b is not None:
             try:
                 coord = SkyCoord(l * u.deg, b * u.deg, frame="galactic")
             except ValueError as e:
                 return "Unable to parse l,b = '{},{}': {}".format(l, b, e)
-            result = {"searchl": {"display_name": "Search l (deg)", "value": coord.l.value},
-                      "searchb": {"display_name": "Search b (deg)", "value": coord.b.value}
-                      }
+            result = {
+                "searchl": {"display_name": "Search l (deg)", "value": coord.l.value},
+                "searchb": {"display_name": "Search b (deg)", "value": coord.b.value},
+            }
 
         if coord is None:
             return "Error: must specify RA,Dec or l,b"
@@ -407,38 +415,46 @@ def API():
         result["searchcoord"] = {
             "display_name": "Search Coord",
             "value": coord.to_string(),
-            }
+        }
 
         if "dm" in request.args:
             dm = float(request.args["dm"])
         if "d" in request.args:
-            d = float(request.args["d"])*u.pc
+            d = float(request.args["d"]) * u.pc
         if "dmmodel" in request.args:
             dmmodel = request.args["dmmodel"].lower()
-            if not dmmodel in ['ymw16','ne2001']:
+            if not dmmodel in ["ymw16", "ne2001"]:
                 return "Error: '{}' is not a valid DM model".format(dmmodel)
-            result['dmmodel'] = dmmodel
+            result["dmmodel"] = dmmodel
 
         if dm is not None:
             model_d, _ = pygedm.dm_to_dist(
                 coord.galactic.l, coord.galactic.b, dm, method=dmmodel.upper()
-                )
+            )
             result["searchdm"] = {"display_name": "Search DM", "value": dm}
-            result['computed_d'] = {"display_name": "Computed Distance (pc)", "value": model_d.to(u.pc).value}
+            result["computed_d"] = {
+                "display_name": "Computed Distance (pc)",
+                "value": model_d.to(u.pc).value,
+            }
         elif d is not None:
             model_dm, _ = pygedm.dist_to_dm(
                 coord.galactic.l, coord.galactic.b, d, method=dmmodel.upper(),
-                )
-            result['search_d'] = {"display_name": "Search D (pc)", "value": d.to(u.pc).value}
-            result['computed_dm'] = {"display_name": "Computed DM", "value": model_dm.value}
+            )
+            result["search_d"] = {
+                "display_name": "Search D (pc)",
+                "value": d.to(u.pc).value,
+            }
+            result["computed_dm"] = {
+                "display_name": "Computed DM",
+                "value": model_dm.value,
+            }
         max_DM, _ = pygedm.dist_to_dm(
             coord.galactic.l, coord.galactic.b, 100 * u.kpc, method=dmmodel.upper(),
-            )
-        result['max_dm'] = {"display_name": "Max DM", "value": max_DM.value}
-        result['dmmodel'] = {"display_name": "DM Model", "value": dmmodel.upper()}
+        )
+        result["max_dm"] = {"display_name": "Max DM", "value": max_DM.value}
+        result["dmmodel"] = {"display_name": "DM Model", "value": dmmodel.upper()}
         # convert dict to JSON
         result = json.dumps(result)
-
 
     return result
 
