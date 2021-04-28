@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
- 
+
+
  
 {% block title %} DM Model {% endblock %}
  
@@ -17,59 +18,54 @@
     <form action="" method="post" novalidate>
       {{form.csrf_token}}
  
-      <p>
- 
-          {{form.coordinates.label}}
-          {{form.coordinates(size=32)}}
 
-{% for subfield in form.lb_or_radec_selector %}
-    <tr>
-        <td>{{ subfield }}</td>
-        <td>{{ subfield.label }}</td>
-    </tr>
-{% endfor %}
-           {% for error in form.coordinates.errors %}
+{{form.coordinates(size=32)}}
+{{form.lb_or_radec(class='toggle on',
+**{'data-toggle':"toggle",'data-off':'Galactic (<i
+id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
+'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
+'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
+{% for error in form.coordinates.errors %}
           <span style="color:red;">
  
               {{error}}
           </span>
           {% endfor %}
-      </p> 
-      <p>
+
+<!-- {% for subfield in form.lb_or_radec_selector %} -->
+<!--     <tr> -->
+<!--         <td>{{ subfield }}</td> -->
+<!--         <td>{{ subfield.label }}</td> -->
+<!--     </tr> -->
+<!-- {% endfor %} -->
  
-          {{form.d_or_dm.label}}
-          {{form.d_or_dm(size=32)}}
-{% for subfield in form.d_or_dm_selector %}
-    <tr>
-        <td>{{ subfield }}</td>
-        <td>{{ subfield.label }}</td>
-    </tr>
-{% endfor %}
+<br><br>
+
+{{form.d_or_dm(size=32)}}
+{{form.d_or_dm_selector(class='toggle',
+**{'data-toggle':"toggle",'data-off':"DM (pc/cc)", 'data-on':"Distance
+(pc)",
+'data-onstyle':"success",'data-offstyle':"primary",'data-width':
+"20%",'data-height': "5%","data-size": "normal"})}}
           {% for error in form.d_or_dm.errors %}
           <span style="color:red;">
  
               {{error}}
           </span>
           {% endfor %}
+<br>
 
-      </p>
- 
-      <p>
- {% for subfield in form.model_selector %}
-    <tr>
-        <td>{{ subfield }}</td>
-        <td>{{ subfield.label }}</td>
-    </tr>
-{% endfor %}
+{{form.model_selector(class='toggle',
+**{'data-toggle':"toggle",'data-off':"YMW16", 'data-on':"NE2001", 'data-onstyle':"success", 'data-offstyle':"primary"})}}
 
-      </p>
- 
+
+<br><br>
  
         <p>
 <!-- <input type="submit" value="Search" class="btn btn-success"> -->
 <!-- <input type="submit" value="API" class="btn btn-success"> -->
-{{ form.compute }}
-{{ form.clear }}
+{{ form.compute(class='button button1') }}
+{{ form.clear(class="button button3") }}
         </p>
  
  
@@ -87,12 +83,20 @@
     <div class="container">
     <hr>
     Based on <a href="https://github.com/FRBs/pygedm">PyGEDM</a>,
-    which itself uses <a
+    which  uses <a
     href="https://ui.adsabs.harvard.edu/abs/2017ApJ...835...29Y/abstract">Yao,
     Manchester and Wang (2017; YMW16)</a> and <a
     href="https://ui.adsabs.harvard.edu/abs/2002astro.ph..7156C/abstract">Cordes
-    and Lazio (2002; NE2001)</a>.
-    </div>
+    and Lazio (2002; NE2001)</a>.<br>
 
- 
+Coordinate conversions done by <a
+href="https://www.astropy.org/">astropy</a>.  Examples:<br>
+<em>123.4 56.7</em>: decimal degrees<br>
+<em>12:34:56 -12:34:56</em>: assumed hours, degrees<br>
+<em>12h34m56s -12d34m56s</em>: explicit units<br>
+Separate coordinates with whitespace or comma
+
+</div>
+
 {% endblock %}
+

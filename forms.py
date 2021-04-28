@@ -1,11 +1,14 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, DecimalField, SubmitField, RadioField
+from wtforms import StringField, DecimalField, SubmitField, RadioField, BooleanField
 from wtforms.validators import InputRequired, ValidationError, Optional
 import re
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 
 import pulsarsurveyscraper
+
+radec_label = "&#x3B1 &#x3B4"
+lb_label = "<i>&#x2113</i> <i>b</i>"
 
 
 def parse_equcoord_and_validate(form, data):
@@ -18,10 +21,13 @@ def parse_equcoord_and_validate(form, data):
     """
 
     # divide the string into equal RA, Dec pieces
-    c = data.data.split()
-    l = len(c)
-    ra = " ".join(c[: (l // 2)])
-    dec = " ".join(c[(l // 2) :])
+    if "," in data.data:
+        ra, dec = map(str.strip, data.data.split(","))
+    else:
+        c = data.data.split()
+        l = len(c)
+        ra = " ".join(c[: (l // 2)])
+        dec = " ".join(c[(l // 2) :])
 
     try:
         if (re.search(r"[^\d.+\-]", ra) is None) and (
@@ -55,12 +61,14 @@ def parse_galcoord_and_validate(form, data):
     if it can parse, returns astropy SkyCoord object
     if it cannot, raises ValidationError
     """
-
-    # divide the string into equal l, b pieces
-    c = data.data.split()
-    l = len(c)
-    gal_l = " ".join(c[: (l // 2)])
-    gal_b = " ".join(c[(l // 2) :])
+    if "," in data.data:
+        gal_l, gal_b = map(str.strip, data.data.split(","))
+    else:
+        # divide the string into equal l, b pieces
+        c = data.data.split()
+        l = len(c)
+        gal_l = " ".join(c[: (l // 2)])
+        gal_b = " ".join(c[(l // 2) :])
 
     try:
         if (re.search(r"[^\d.+\-]", gal_l) is None) and (
@@ -88,6 +96,7 @@ class SearchForm(FlaskForm):
 
     contents:
         coordinates (string): gets parsed and validated using parse_coord_and_validate
+        lb_or_radec (bool): whether coordinates are equatorial or galactic
         radius (decimal)
         dm (decimal): optional
         dmtol (decimal): optional
@@ -97,9 +106,16 @@ class SearchForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinate (RA Dec)",
+        "Search Coordinates",
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
+    lb_or_radec = BooleanField(
+        "Equatorial or Galactic",
+        validators=[],
+        id="coord-toggle",
+        default=True,
+    )
+
     radius = DecimalField(
         "Search Radius (deg)", default=5, validators=[InputRequired()]
     )
@@ -127,27 +143,28 @@ class DMForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinate (RA Dec or l b)",
+        radec_label,
         validators=[InputRequired(), parse_equcoord_and_validate],
     )
-    d_or_dm = DecimalField("Distance (pc) or DM", validators=[InputRequired()])
-    d_or_dm_selector = RadioField(
-        "Input is Distance or DM",
-        default="distance",
-        choices=[("distance", "Distance"), ("dm", "DM")],
-        validators=[InputRequired()],
+    d_or_dm = DecimalField("Distance (pc)", validators=[InputRequired()])
+    d_or_dm_selector = BooleanField(
+        "Distance or DM",
+        id="input-toggle",
+        validators=[],
     )
-    lb_or_radec_selector = RadioField(
-        "Equatorial (RA,Dec) or Galactic (l,b)",
-        default="equatorial",
-        choices=[("equatorial", "Equatorial (RA,Dec)"), ("galactic", "Galactic (l,b)")],
-        validators=[InputRequired()],
+    lb_or_radec = BooleanField(
+        "Equatorial or Galactic",
+        validators=[],
+        default=True,
+        id="coord-toggle",
     )
+
     model_selector = RadioField(
         "DM Model",
         default="ne2001",
         choices=[("ne2001", "NE2001"), ("ymw16", "YMW16")],
         validators=[InputRequired()],
     )
+    model_selector = BooleanField("Model", validators=[], id="model-toggle")
     compute = SubmitField(label="Compute")
     clear = SubmitField(label="Clear")

@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
  
 {% block title %} Pulsar Survey Scraper {% endblock %}
- 
+
+
 {% block body %}
  
 <div class="container">
@@ -20,7 +21,12 @@
  
           {{form.coordinates.label}}
           {{form.coordinates(size=32)}}
-           {% for error in form.coordinates.errors %}
+{{form.lb_or_radec(class='toggle on',
+**{'data-toggle':"toggle",'data-off':'Galactic (<i
+id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
+'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
+'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
+{% for error in form.coordinates.errors %}
           <span style="color:red;">
  
               {{error}}
@@ -71,9 +77,9 @@
         <p>
 <!-- <input type="submit" value="Search" class="btn btn-success"> -->
 <!-- <input type="submit" value="API" class="btn btn-success"> -->
-{{ form.search }}
-{{ form.api }}
-{{ form.clear }}
+{{ form.search(class="button button1") }}
+{{ form.api(class="button button2") }}
+{{ form.clear(class="button button3") }}
         </p>
  
  
@@ -108,8 +114,16 @@ Surveys:<br>
 </span>
 
 <hr>
-Inspired by <a href="http://hosting.astro.cornell.edu/~deneva/tabscr/tabscr.php">Julia Deneva's Pulsar Survey Scraper</a>
+Inspired by <a
+href="http://hosting.astro.cornell.edu/~deneva/tabscr/tabscr.php">Julia
+Deneva's Pulsar Survey Scraper</a><br>
 
+Coordinate conversions done by <a
+href="https://www.astropy.org/">astropy</a>.  Examples:<br>
+<em>123.4 56.7</em>: decimal degrees<br>
+<em>12:34:56 -12:34:56</em>: assumed hours, degrees<br>
+<em>12h34m56s -12d34m56s</em>: explicit units<br>
+Separate coordinates with whitespace or comma
 </div> 
 
  
