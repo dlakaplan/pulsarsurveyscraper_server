@@ -139,6 +139,7 @@ class DMForm(FlaskForm):
         d_or_dm_selector (radio): is the input distance or DM?
         model_selector (radio): is the model NE2001 or YMW16?
         compute (button): for executing main search
+        api (button): for submitting as API
         clear (button): for clearing the form
     """
 
@@ -167,4 +168,5 @@ class DMForm(FlaskForm):
     )
     model_selector = BooleanField("Model", validators=[], id="model-toggle")
     compute = SubmitField(label="Compute")
+    api = SubmitField(label="API")
     clear = SubmitField(label="Clear")

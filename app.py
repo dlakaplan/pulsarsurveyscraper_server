@@ -126,6 +126,7 @@ def Search():
                     return redirect(
                         url_for(
                             "API",
+                            type="search",
                             ra=coord.icrs.ra.deg,
                             dec=coord.icrs.dec.deg,
                             radius=float(form.radius.data),
@@ -135,6 +136,7 @@ def Search():
                     return redirect(
                         url_for(
                             "API",
+                            type="search",
                             l=coord.galactic.l.deg,
                             b=coord.galactic.b.deg,
                             radius=float(form.radius.data),
@@ -146,6 +148,7 @@ def Search():
                     return redirect(
                         url_for(
                             "API",
+                            type="search",
                             ra=coord.icrs.ra.deg,
                             dec=coord.icrs.dec.deg,
                             radius=float(form.radius.data),
@@ -157,6 +160,7 @@ def Search():
                     return redirect(
                         url_for(
                             "API",
+                            type="search",
                             l=coord.galactic.l.deg,
                             b=coord.galactic.b.deg,
                             radius=float(form.radius.data),
@@ -492,6 +496,58 @@ def Compute():
         max_DM, _ = pygedm.dist_to_dm(
             coord.galactic.l, coord.galactic.b, 100 * u.kpc, method=model,
         )
+
+        # if we've pressed the "API" button
+        # instead of showing the tabular output redirect
+        # to the API result
+        if form.api.data:
+            if form.d_or_dm_selector.data:
+                if form.lb_or_radec.data:
+                    return redirect(
+                        url_for(
+                            "API",
+                            type="compute",
+                            ra=coord.icrs.ra.deg,
+                            dec=coord.icrs.dec.deg,
+                            d=distance,
+                            dmmodel=model.lower(),
+                        )
+                    )
+                else:
+                    return redirect(
+                        url_for(
+                            "API",
+                            type="compute",
+                            l=coord.galactic.l.deg,
+                            b=coord.galactic.b.deg,
+                            d=distance,
+                            dmmodel=model.lower(),
+                        )
+                    )
+
+            else:
+                if form.lb_or_radec.data:
+                    return redirect(
+                        url_for(
+                            "API",
+                            type="compute",
+                            ra=coord.icrs.ra.deg,
+                            dec=coord.icrs.dec.deg,
+                            dm=DM,
+                            dmmodel=model.lower(),
+                        )
+                    )
+                else:
+                    return redirect(
+                        url_for(
+                            "API",
+                            type="compute",
+                            l=coord.galactic.l.deg,
+                            b=coord.galactic.b.deg,
+                            dm=DM,
+                            dmmodel=model.lower(),
+                        )
+                    )
 
         # or, clear the form if desired
         if form.clear.data:
