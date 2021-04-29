@@ -13,7 +13,7 @@ Read from environment variables in `server_config.py`:
 ## API:
 Queries can come via forms, or via an API that returns a JSON payload.  
 
-* To query the scraper, the URL should be of the form:
+* To query the survey scraper, the URL should be of the form:
 ```
 https://pulsar.cgca-hub.org/api?type=search&ra=123.4&dec=56.7&radius=5.0
 ```
@@ -60,5 +60,46 @@ dm
 url
 ```
 
+* To query the DM tool, the URL should be of the form:
+```
+https://pulsar.cgca-hub.org/api?type=compute&ra=123.4&dec=56.7&dm=30.0&dmmodel=ymw16
+```
+The usage is:
+```
+parameters:
+
+    type: str ("compute" or "search")
+
+    if type == "compute":
+    ra: float in degrees
+    dec: float in degrees
+    or
+    l: float in degrees
+    b: float in degrees
+
+    dmmodel: str ("ne2001" or "ymw16")
+
+    one of:
+    d: float
+    dm: float       
+```
+and the payload looks like:
+```
+{"searchra": {"display_name": "Search RA (deg)", "value": 123.4}, "searchdec": {"display_name": "Search Dec (deg)", "value": 56.7}, "searchcoord": {"display_name": "Search Coord", "value": "123.4 56.7"}, "dmmodel": {"display_name": "DM Model", "value": "YMW16"}, "searchdm": {"display_name": "Search DM", "value": 30.0}, "computed_d": {"display_name": "Computed Distance (pc)", "value": 2139.48095703125}, "max_dm": {"display_name": "Max DM", "value": 44.41266632080078}}
+```
+with data:
+```
+searchra
+searchdec
+searchcoord
+dmmodel
+searchdm (if specified)
+or
+searchd (if specified)
+max_dm
+computed_d
+or
+computed_dm
+```
 ## deployment:
 Based on [this tutorial](https://www.digitalocean.com/community/tutorials/how-to-serve-flask-applications-with-gunicorn-and-nginx-on-ubuntu-18-04).  Also used [this tutorial](https://github.com/jupyterhub/the-littlest-jupyterhub/issues/272) to keep TLJH running behind a proxy.
