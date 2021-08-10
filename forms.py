@@ -106,15 +106,12 @@ class SearchForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinates",
-        validators=[InputRequired(), parse_equcoord_and_validate],
+        "Search Coordinates", validators=[InputRequired(), parse_equcoord_and_validate],
     )
     lb_or_radec = BooleanField(
-        "Equatorial or Galactic",
-        validators=[],
-        id="coord-toggle",
-        default=True,
+        "Equatorial or Galactic", validators=[], id="coord-toggle", default=True,
     )
+    deduplicate = BooleanField("Deduplicate", validators=[], default=False)
 
     radius = DecimalField(
         "Search Radius (deg)", default=5, validators=[InputRequired()]
@@ -144,20 +141,12 @@ class DMForm(FlaskForm):
     """
 
     coordinates = StringField(
-        radec_label,
-        validators=[InputRequired(), parse_equcoord_and_validate],
+        radec_label, validators=[InputRequired(), parse_equcoord_and_validate],
     )
     d_or_dm = DecimalField("Distance (pc)", validators=[InputRequired()])
-    d_or_dm_selector = BooleanField(
-        "Distance or DM",
-        id="input-toggle",
-        validators=[],
-    )
+    d_or_dm_selector = BooleanField("Distance or DM", id="input-toggle", validators=[],)
     lb_or_radec = BooleanField(
-        "Equatorial or Galactic",
-        validators=[],
-        default=True,
-        id="coord-toggle",
+        "Equatorial or Galactic", validators=[], default=True, id="coord-toggle",
     )
 
     model_selector = RadioField(

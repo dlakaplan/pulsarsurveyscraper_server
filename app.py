@@ -18,7 +18,8 @@ import json
 from bs4 import BeautifulSoup, Tag
 
 import pulsarsurveyscraper
-import pygedm
+
+# import pygedm
 
 degree_symbol = "\N{DEGREE SIGN}"
 arcmin_symbol = "\N{PRIME}"
@@ -117,6 +118,11 @@ def Search():
         else:
             DMtol = form.dm.data
 
+        if form.deduplicate.data:
+            deduplicate = "hide"
+        else:
+            deduplicate = False
+
         # if we've pressed the "API" button
         # instead of showing the tabular output redirect
         # to the API result
@@ -179,7 +185,11 @@ def Search():
         # first get the astropy Table
         if form.lb_or_radec.data:
             result = pulsar_table.search(
-                coord, radius=float(form.radius.data) * u.deg, DM=DM, DM_tolerance=DMtol
+                coord,
+                radius=float(form.radius.data) * u.deg,
+                DM=DM,
+                DM_tolerance=DMtol,
+                deduplicate=deduplicate,
             )
         else:
             result = pulsar_table.search(
@@ -188,6 +198,7 @@ def Search():
                 DM=DM,
                 DM_tolerance=DMtol,
                 return_native=True,
+                deduplicate=deduplicate,
             )
 
         result["P"][result["P"] < 0] = np.nan
@@ -363,6 +374,7 @@ def API():
             DM_tolerance=dmtol,
             return_json=True,
             return_native=True,
+            deduplicate=True,
         )
 
     # compute DM at a distance
