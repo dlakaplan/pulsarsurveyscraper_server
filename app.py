@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup, Tag
 
 import pulsarsurveyscraper
 
-# import pygedm
+import pygedm
 
 degree_symbol = "\N{DEGREE SIGN}"
 arcmin_symbol = "\N{PRIME}"
