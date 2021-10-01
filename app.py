@@ -288,7 +288,7 @@ def Search():
                 result,
                 format,
                 search_query_txt,
-                request.path + query_url,
+                request.base_url + query_url,
                 directory=app.config["OUTPUT_DIR"],
             )
             return send_file(output, as_attachment=True)
