@@ -103,6 +103,8 @@ class SearchForm(FlaskForm):
         search (button): for executing main search
         api (button): for submitting as API
         clear (button): for clearing the form
+        PDF (button): for downloading a PDF
+        PNG (button): for downloading a PNG
     """
 
     coordinates = StringField(
@@ -123,6 +125,8 @@ class SearchForm(FlaskForm):
     search = SubmitField(label="Search")
     api = SubmitField(label="API")
     clear = SubmitField(label="Clear")
+    PDF = SubmitField(label="PDF")
+    PNG = SubmitField(label="PNG")
 
 
 class DMForm(FlaskForm):
