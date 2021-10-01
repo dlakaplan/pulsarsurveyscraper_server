@@ -439,6 +439,9 @@ def Compute():
             DM, _ = pygedm.dist_to_dm(
                 coord.galactic.l, coord.galactic.b, distance, method=model,
             )
+        max_DM, _ = pygedm.dist_to_dm(
+            coord.galactic.l, coord.galactic.b, 100 * u.kpc, method=model,
+        )
 
         # or, clear the form if desired
         if form.clear.data:
@@ -468,12 +471,12 @@ def Compute():
                 DM, distance.to(u.pc).value, model
             )
         else:
-            for model, model_label in form.model_selector.choices:
-                if model == form.model_selector.data:
-                    break
-            result_string = "For distance = {:.1f} pc, find DM = {:.1f} pc/cc with the {} model".format(
+            result_string = "For <strong>distance = {:.1f} pc</strong>, find <strong>DM = {:.1f} pc/cc</strong> with the {} model".format(
                 distance.to(u.pc).value, DM.value, model
             )
+        result_string += "<br>Along this LOS, <strong>max DM = {:.1f} pc/cc</strong>".format(
+            max_DM.value
+        )
         return render_template(
             "compute.html",
             form=form,
