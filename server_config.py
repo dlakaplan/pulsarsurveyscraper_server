@@ -11,3 +11,8 @@ if not SECRET_KEY:
 DATA_DIR = os.environ.get("SURVEY_DATA")
 if not DATA_DIR:
     DATA_DIR = os.path.curdir
+
+OUTPUT_DIR = os.environ.get("SCRAPER_OUTPUT")
+if not OUTPUT_DIR:
+    OUTPUT_DIR = os.path.curdir
+    

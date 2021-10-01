@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, redirect
+from flask import Flask, render_template, request, url_for, redirect, send_file
 import flask
 from forms import (
     SearchForm,
@@ -12,11 +12,14 @@ from forms import (
 import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy import units as u
+import os
 import pandas
+from requests import Request
 
 from bs4 import BeautifulSoup, Tag
 
 import pulsarsurveyscraper
+import pulsarsurveyscraper.output
 import pygedm
 
 degree_symbol = "\N{DEGREE SIGN}"
@@ -207,6 +210,73 @@ def Search():
             coord_string += "<br>Also requiring DM = <strong>{:.1f}+/-{:.1f} pc/cc</strong>".format(
                 DM, DMtol,
             )
+
+        if form.PNG.data or form.PDF.data:
+            # we want a PDF or PNG output
+            # Get the global URL for the query web page:
+            # do it without actually querying
+            if DM is None:
+                if form.lb_or_radec.data:
+                    query_url = url_for(
+                        "API",
+                        ra=coord.icrs.ra.deg,
+                        dec=coord.icrs.dec.deg,
+                        radius=float(form.radius.data),
+                    )
+
+                else:
+                    query_url = url_for(
+                        "API",
+                        l=coord.galactic.l.deg,
+                        b=coord.galactic.b.deg,
+                        radius=float(form.radius.data),
+                    )
+
+            else:
+                if form.lb_or_radec.data:
+                    query_url = url_for(
+                        "API",
+                        ra=coord.icrs.ra.deg,
+                        dec=coord.icrs.dec.deg,
+                        radius=float(form.radius.data),
+                        dm=DM,
+                        dmtol=DMtol,
+                    )
+
+                else:
+                    query_url = url_for(
+                        "API",
+                        l=coord.galactic.l.deg,
+                        b=coord.galactic.b.deg,
+                        radius=float(form.radius.data),
+                        dm=DM,
+                        dmtol=DMtol,
+                    )
+
+            format = "pdf" if form.PDF.data else "png"
+            if form.lb_or_radec.data:
+                search_query_txt = "Searching {:.1f}deg around RA,Dec = {} = {}d,{}d".format(
+                    float(form.radius.data),
+                    coord.to_string("hmsdms", sep=":"),
+                    coord.ra.to_string(decimal=True),
+                    coord.dec.to_string(decimal=True, alwayssign=True),
+                )
+
+            else:
+                search_query_txt = "Searching {:.1f}deg around l,b = {}d,{}d".format(
+                    float(form.radius.data),
+                    coord.l.to_string(decimal=True),
+                    coord.b.to_string(decimal=True, alwayssign=True),
+                )
+
+            output = pulsarsurveyscraper.output.make_output(
+                result,
+                format,
+                search_query_txt,
+                request.path + query_url,
+                directory=app.config["OUTPUT_DIR"],
+            )
+            return send_file(output, as_attachment=True)
 
         # go from astropy Table -> pandas dataframe -> HTML table
         df = result.to_pandas()
