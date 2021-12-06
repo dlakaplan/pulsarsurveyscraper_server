@@ -40,7 +40,9 @@ app.config.from_object("server_config")
 # instantiate the pulsar survey table
 # this needs the directory where the data are stored
 # do it at the top level so that it's accessible within the functions below
-pulsar_table = pulsarsurveyscraper.PulsarTable(directory=app.config["DATA_DIR"],)
+pulsar_table = pulsarsurveyscraper.PulsarTable(
+    directory=app.config["DATA_DIR"],
+)
 
 coordinate_type = "equatorial"
 
@@ -48,10 +50,18 @@ coordinate_type = "equatorial"
 def format_lb(coord):
     return (
         "{}{}".format(
-            coord.galactic.l.to_string(decimal=True, precision=3,), degree_symbol,
+            coord.galactic.l.to_string(
+                decimal=True,
+                precision=3,
+            ),
+            degree_symbol,
         ),
         "{}{}".format(
-            coord.galactic.b.to_string(decimal=True, alwayssign=True, precision=3,),
+            coord.galactic.b.to_string(
+                decimal=True,
+                alwayssign=True,
+                precision=3,
+            ),
             degree_symbol,
         ),
     )
@@ -60,7 +70,11 @@ def format_lb(coord):
 def format_radec_decimal(coord):
     return (
         "{}{}".format(
-            coord.icrs.ra.to_string(decimal=True, precision=3,), degree_symbol,
+            coord.icrs.ra.to_string(
+                decimal=True,
+                precision=3,
+            ),
+            degree_symbol,
         ),
         "{}{}".format(
             coord.icrs.dec.to_string(decimal=True, alwayssign=True, precision=3),
@@ -222,10 +236,13 @@ def Search():
             )
 
         if DM is not None:
-            coord_string += "<br>Also requiring DM = <strong>{:.1f}+/-{:.1f} pc/cc</strong>".format(
-                DM, DMtol,
+            coord_string += (
+                "<br>Also requiring DM = <strong>{:.1f}+/-{:.1f} pc/cc</strong>".format(
+                    DM,
+                    DMtol,
+                )
             )
-            
+
         if form.PNG.data or form.PDF.data:
             # we want a PDF or PNG output
             # Get the global URL for the query web page:
@@ -270,11 +287,13 @@ def Search():
 
             format = "pdf" if form.PDF.data else "png"
             if form.lb_or_radec.data:
-                search_query_txt = "Searching {:.1f}deg around RA,Dec = {} = {}d,{}d".format(
-                    float(form.radius.data),
-                    coord.to_string("hmsdms", sep=":"),
-                    coord.ra.to_string(decimal=True),
-                    coord.dec.to_string(decimal=True, alwayssign=True),
+                search_query_txt = (
+                    "Searching {:.1f}deg around RA,Dec = {} = {}d,{}d".format(
+                        float(form.radius.data),
+                        coord.to_string("hmsdms", sep=":"),
+                        coord.ra.to_string(decimal=True),
+                        coord.dec.to_string(decimal=True, alwayssign=True),
+                    )
                 )
 
             else:
@@ -293,14 +312,16 @@ def Search():
             )
             return send_file(output, as_attachment=True)
 
-
         # go from astropy Table -> pandas dataframe -> HTML table
         df = result.to_pandas()
         if len(df) > 0 and not isinstance(df["PSR"][0], str):
             # turn the "PSR" column from bytestring to string
             df["PSR"] = df["PSR"].str.decode("utf-8")
         html_table = df.to_html(
-            formatters={"P": lambda x: "%.2f" % x, "Distance": lambda x: "%.2f" % x,},
+            formatters={
+                "P": lambda x: "%.2f" % x,
+                "Distance": lambda x: "%.2f" % x,
+            },
             justify="left",
         )
 
@@ -328,7 +349,8 @@ def Search():
             cols = row.find_all("td")
             # add links to survey column
             link_tag = soup.new_tag(
-                "a", href=pulsarsurveyscraper.Surveys[cols[5].text]["url"],
+                "a",
+                href=pulsarsurveyscraper.Surveys[cols[5].text]["url"],
             )
             link_tag.string = cols[5].text
             cols[5].string = ""
@@ -385,7 +407,7 @@ def API():
 
     one of:
     d: float
-    dm: float       
+    dm: float
 
     returns JSON
     """
@@ -415,6 +437,8 @@ def API():
             l = float(request.args["l"])
         if "b" in request.args:
             b = float(request.args["b"])
+        if "radius" in request.args:
+            radius = float(request.args["radius"])
 
         coord = None
 
@@ -524,7 +548,10 @@ def API():
             }
         elif d is not None:
             model_dm, _ = pygedm.dist_to_dm(
-                coord.galactic.l, coord.galactic.b, d, method=dmmodel.upper(),
+                coord.galactic.l,
+                coord.galactic.b,
+                d,
+                method=dmmodel.upper(),
             )
             result["search_d"] = {
                 "display_name": "Search D (pc)",
@@ -535,7 +562,10 @@ def API():
                 "value": model_dm.value,
             }
         max_DM, _ = pygedm.dist_to_dm(
-            coord.galactic.l, coord.galactic.b, 100 * u.kpc, method=dmmodel.upper(),
+            coord.galactic.l,
+            coord.galactic.b,
+            100 * u.kpc,
+            method=dmmodel.upper(),
         )
         result["max_dm"] = {"display_name": "Max DM", "value": max_DM.value}
         result["dmmodel"] = {"display_name": "DM Model", "value": dmmodel.upper()}
@@ -573,10 +603,16 @@ def Compute():
         else:
             distance = float(form.d_or_dm.data) * u.pc
             DM, _ = pygedm.dist_to_dm(
-                coord.galactic.l, coord.galactic.b, distance, method=model,
+                coord.galactic.l,
+                coord.galactic.b,
+                distance,
+                method=model,
             )
         max_DM, _ = pygedm.dist_to_dm(
-            coord.galactic.l, coord.galactic.b, 100 * u.kpc, method=model,
+            coord.galactic.l,
+            coord.galactic.b,
+            100 * u.kpc,
+            method=model,
         )
 
         # if we've pressed the "API" button
@@ -643,7 +679,8 @@ def Compute():
                 *format_radec_decimal(coord),
             )
             coord_string += "<br>= {} = {}, {} ...".format(
-                lb_label.replace(" ", ","), *format_lb(coord),
+                lb_label.replace(" ", ","),
+                *format_lb(coord),
             )
         else:
             coord_string = "Computing for <strong>{} = {}, {}</strong>".format(
@@ -662,8 +699,10 @@ def Compute():
             result_string = "For <strong>distance = {:.1f} pc</strong>, find <strong>DM = {:.1f} pc/cc</strong> with the {} model".format(
                 distance.to(u.pc).value, DM.value, model
             )
-        result_string += "<br>Along this LOS, <strong>max DM = {:.1f} pc/cc</strong>".format(
-            max_DM.value
+        result_string += (
+            "<br>Along this LOS, <strong>max DM = {:.1f} pc/cc</strong>".format(
+                max_DM.value
+            )
         )
         return render_template(
             "compute.html",
