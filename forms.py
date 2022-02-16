@@ -138,6 +138,8 @@ class DMForm(FlaskForm):
         lb_or_radec_selector (radio): is the input RA,Dec or l,b?
         d_or_dm (decimal): input value of distance (pc) or DM
         d_or_dm_selector (radio): is the input distance or DM?
+        frequency (decimal): frequency for scintillation calculations
+        velocity (decimal): velocity for scintillation calculations
         model_selector (radio): is the model NE2001 or YMW16?
         compute (button): for executing main search
         api (button): for submitting as API
@@ -152,7 +154,12 @@ class DMForm(FlaskForm):
     lb_or_radec = BooleanField(
         "Equatorial or Galactic", validators=[], default=True, id="coord-toggle",
     )
-
+    frequency = DecimalField(
+        "Frequency (GHz)", default=1, validators=[Optional()]
+    )
+    velocity = DecimalField(
+        "Velocity (km/s)", default=100, validators=[Optional()]
+    )
     model_selector = RadioField(
         "DM Model",
         default="ne2001",

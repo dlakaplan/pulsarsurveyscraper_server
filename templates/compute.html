@@ -55,6 +55,29 @@ id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
           {% endfor %}
 <br>
 
+
+{{form.frequency.label}}
+          {{form.frequency(size=32)}} (optional, NE2001 only)
+          {% for error in form.frequency.errors %}
+          <span style="color:red;">
+ 
+              {{error}}
+          </span>
+          {% endfor %}
+<br>
+{{form.velocity.label}}
+          {{form.velocity(size=32)}} (optional, NE2001 only)
+          {% for error in form.velocity.errors %}
+          <span style="color:red;">
+ 
+              {{error}}
+          </span>
+          {% endfor %}
+<br>
+
+
+
+
 {{form.model_selector(class='toggle',
 **{'data-toggle':"toggle",'data-off':"YMW16", 'data-on':"NE2001", 'data-onstyle':"success", 'data-offstyle':"primary"})}}
 

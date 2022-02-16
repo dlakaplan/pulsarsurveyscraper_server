@@ -600,6 +600,31 @@ def Compute():
             distance, _ = pygedm.dm_to_dist(
                 coord.galactic.l, coord.galactic.b, DM, method=model
             )
+            Array = pygedm.ne2001_wrapper.dm_to_dist(
+                coord.galactic.l.value,
+                coord.galactic.b.value,
+                DM,
+                form.frequency.data * u.GHz,
+                full_output=True,
+            )
+            nu = form.frequency.data * u.GHz
+            V_perp = form.velocity.data * u.km / u.s
+            sm = Array["smtau"]
+            tauiss = Array["tau_sc"].value * u.s
+            c1 = 1.16  # param for uniform, Kolmogorov medium
+
+            # calculate scintillation bandwidth (scintbw, kHz)
+            # Ref: Eq. 35 from Cordes & Lazio 1991
+            scintbw = (c1 / (2 * np.pi * tauiss.to_value(u.ms))) * u.kHz
+            # calculate scintillation time scale (scinttime, s)
+            # Ref: Eq. 46 from Cordes & Lazio 1991 (2.3 change to 3.3)
+            scinttime = (
+                (3.3 * u.s)
+                * nu.to_value(u.GHz) ** 1.2
+                * sm ** (-0.6)
+                * (100 / V_perp.to_value(u.km / u.s))
+            )
+
         else:
             distance = float(form.d_or_dm.data) * u.pc
             DM, _ = pygedm.dist_to_dm(
@@ -608,6 +633,31 @@ def Compute():
                 distance,
                 method=model,
             )
+            Array = pygedm.ne2001_wrapper.dist_to_dm(
+                coord.galactic.l.value,
+                coord.galactic.b.value,
+                distance,
+                form.frequency.data * u.GHz,
+                full_output=True,
+            )
+            nu = form.frequency.data * u.GHz
+            V_perp = form.velocity.data * u.km / u.s
+            sm = Array["smtau"]
+            tauiss = Array["tau_sc"].value * u.s
+            c1 = 1.16  # param for uniform, Kolmogorov medium
+
+            # calculate scintillation bandwidth (scintbw, kHz)
+            # Ref: Eq. 35 from Cordes & Lazio 1991
+            scintbw = (c1 / (2 * np.pi * tauiss.to_value(u.ms))) * u.kHz
+            # calculate scintillation time scale (scinttime, s)
+            # Ref: Eq. 46 from Cordes & Lazio 1991 (2.3 change to 3.3)
+            scinttime = (
+                (3.3 * u.s)
+                * nu.to_value(u.GHz) ** 1.2
+                * sm ** (-0.6)
+                * (100 / V_perp.to_value(u.km / u.s))
+            )
+
         max_DM, _ = pygedm.dist_to_dm(
             coord.galactic.l,
             coord.galactic.b,
@@ -704,6 +754,13 @@ def Compute():
                 max_DM.value
             )
         )
+        result_string += "<br>Scintillation bandwidth at {:.2f} GHz = <strong>{:.1e} kHz</strong>".format(
+            nu.to_value(u.GHz), scintbw.to(u.kHz).value
+        )
+        result_string += "<br>Scintillation timescale for v = {:.1f} km/s = <strong>{:.1e} s</strong>".format(
+            V_perp.to_value(u.km / u.s), scinttime.to(u.s).value
+        )
+
         return render_template(
             "compute.html",
             form=form,
