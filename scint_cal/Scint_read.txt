@@ -1,2 +1,3 @@
-Directory to run scintillation calculator 
+Directory/folders to run scintillation calculator 
 Work in progrese 
+Add by Juan 
