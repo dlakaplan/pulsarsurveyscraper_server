@@ -64,7 +64,7 @@ def send():
         #Max DM distance multiply by 100
         LIST = pygedm.ne2001_wrapper.dist_to_dm(sky_coords.galactic.l.value,
                                                 sky_coords.galactic.b.value,
-                                                100*d.value,nu,
+                                                100,nu,
                                                 full_output=True)
 
         Max_DM = round((LIST.get('dm')),2)
