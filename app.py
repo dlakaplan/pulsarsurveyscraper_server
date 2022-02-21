@@ -754,10 +754,10 @@ def Compute():
                 max_DM.value
             )
         )
-        result_string += "<br>Scintillation bandwidth at {:.2f} GHz = <strong>{:.1e} kHz</strong>".format(
+        result_string += "<br>Scintillation bandwidth (at {:.2f} GHz) = <strong>{:.1e} kHz</strong>".format(
             nu.to_value(u.GHz), scintbw.to(u.kHz).value
         )
-        result_string += "<br>Scintillation timescale for v = {:.1f} km/s = <strong>{:.1e} s</strong>".format(
+        result_string += "<br>Scintillation timescale (for v = {:.1f} km/s) = <strong>{:.1e} s</strong>".format(
             V_perp.to_value(u.km / u.s), scinttime.to(u.s).value
         )
 
