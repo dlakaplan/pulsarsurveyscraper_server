@@ -1,4 +1,6 @@
 # pulsarsurveyscraper_server
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.6390905.svg)](https://doi.org/10.5281/zenodo.6390905)
+
 
 ## requirements:
 * flask, flask_wtf, astropy, pandas, scipy, bs4
