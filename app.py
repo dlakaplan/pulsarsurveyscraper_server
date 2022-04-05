@@ -36,7 +36,8 @@ https://codeloop.org/flask-tutorial-flask-forms-with-flask-wtf/
 app = Flask(__name__)
 
 app.config.from_object("server_config")
-
+# turn off the automatic sorting of the output
+app.config['JSON_SORT_KEYS'] = False
 # instantiate the pulsar survey table
 # this needs the directory where the data are stored
 # do it at the top level so that it's accessible within the functions below
