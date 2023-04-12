@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block title %} Pulsar Survey Scraper {% endblock %}
+
+
+{% block body %}
+
+<div class="container">
+    <h1>Pulsar Survey Scraper</h1>
+
+    <br>
+
+</div>
+<div class="container">
+    <hr>
+    <h3>Available Surveys:</h3>
+    <span>{{html_table|safe}}</span>
+
+    <hr>
+    Inspired by <a href="http://hosting.astro.cornell.edu/~deneva/tabscr/tabscr.php">Julia
+        Deneva's Pulsar Survey Scraper</a><br>
+
+
+    <hr>
+    Feedback: submit a <a href="https://github.com/dlakaplan/pulsarsurveyscraper/issues">github
+        issue</a> or <a href="mailto:kaplan@uwm.edu">email</a>
+    <br>
+    Citation: if you found this useful in your research, please cite <a href="https://ascl.net/2210.001"><img
+            src="https://img.shields.io/badge/ascl-2210.001-blue.svg?colorB=262255" alt="ascl:2210.001" /></a>. If you
+    find any errors or omissions please contact <a href="mailto:kaplan@uwm.edu">David Kaplan</a> or submit a <a
+        href="https://github.com/dlakaplan/pulsarsurveyscraper/issues">github
+        issue</a>.
+
+</div>
+
+
+{% endblock %}

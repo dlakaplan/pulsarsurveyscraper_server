@@ -11,6 +11,7 @@ from forms import (
 
 import numpy as np
 from astropy.coordinates import SkyCoord
+from astropy.table import Table, Column
 from astropy import units as u
 import pandas
 import json
@@ -44,6 +45,18 @@ app.config["JSON_SORT_KEYS"] = False
 pulsar_table = pulsarsurveyscraper.PulsarTable(
     directory=app.config["DATA_DIR"],
 )
+s, n = np.unique(pulsar_table.data["survey"], return_counts=True)
+# this is a basic dictionary to be used
+# for posting on the form (survey names/links)
+survey_data = {}
+for survey, number in zip(s, n):
+    survey_data[survey] = {
+        "url": pulsarsurveyscraper.Surveys[survey]["url"],
+        "number": number,
+        "date": pulsar_table.data[pulsar_table.data["survey"] == survey][0][
+            "retrieval date"
+        ],
+    }
 
 coordinate_type = "equatorial"
 
@@ -836,6 +849,39 @@ def toggled_status():
     # coordinate_type = "equatorial" if coordinate_status == "true" else "galactic"
     # form.lb_or_radec_selector.data = coordinate_type
     return coordinate_type
+
+
+@app.route("/surveys")
+def Surveys():
+    data = []
+    for s in survey_data.keys():
+        data.append([s, survey_data[s]["number"], survey_data[s]["date"]])
+    tabledata = Table(rows=data, names=("Survey", "Number", "Retrieval Date"))
+    # go from astropy Table -> pandas dataframe -> HTML table
+    df = tabledata.to_pandas()
+    html_table = df.to_html(
+        justify="left",
+    )
+    soup = BeautifulSoup(html_table, "html.parser")
+    header_row = soup.find("tr")
+    header_cols = header_row.find_all("th")
+    rows = soup.find_all("tr")
+    # fix the alignment of various columns
+    col_aligns = {1: "right"}
+    for row in rows[1:]:
+        cols = row.find_all("td")
+        # add links to survey column
+        link_tag = soup.new_tag(
+            "a",
+            href=pulsarsurveyscraper.Surveys[cols[0].text]["url"],
+        )
+        link_tag.string = cols[0].text
+        cols[0].string = ""
+        cols[0].insert(0, link_tag)
+        for i in col_aligns:
+            cols[i]["align"] = col_aligns[i]
+    html_table = soup
+    return render_template("surveys.html", html_table=html_table)
 
 
 # run flask app

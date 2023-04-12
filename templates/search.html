@@ -1,150 +1,145 @@
 {% extends 'base.html' %}
- 
+
 {% block title %} Pulsar Survey Scraper {% endblock %}
 
 
 {% block body %}
- 
+
 <div class="container">
     <h1>Pulsar Survey Scraper</h1>
- 
+
     <br>
     <br>
     <hr>
- 
+
     <h1>Enter a location to search:</h1>
- 
+
     <form action="" method="post" novalidate>
-      {{form.csrf_token}}
- 
-      <p>
- 
-          {{form.coordinates.label}}
-          {{form.coordinates(size=32)}}
-{{form.lb_or_radec(class='toggle on',
-**{'data-toggle':"toggle",'data-off':'Galactic (<i
-id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
-'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
-'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
-{% for error in form.coordinates.errors %}
-          <span style="color:red;">
- 
-              {{error}}
-          </span>
-          {% endfor %}
+        {{form.csrf_token}}
 
-      </p> 
-      <p>
- 
-          {{form.radius.label}}
-          {{form.radius(size=32)}}
-          {% for error in form.radius.errors %}
-          <span style="color:red;">
- 
-              {{error}}
-          </span>
-          {% endfor %}
-
-      </p>
- 
-      <p>
- 
-          {{form.dm.label}}
-          {{form.dm(size=32)}} (optional)
-          {% for error in form.dm.errors %}
-          <span style="color:red;">
- 
-              {{error}}
-          </span>
-          {% endfor %}
- 
-      </p>
- 
-      <p>
- 
-          {{form.dmtol.label}}
-          {{form.dmtol(size=32)}} (optional)
-           {% for error in form.dmtol.errors %}
-          <span style="color:red;">
- 
-              {{error}}
-          </span>
-          {% endfor %}
-
-      </p>
- 
- 
         <p>
-<!-- <input type="submit" value="Search" class="btn btn-success"> -->
-<!-- <input type="submit" value="API" class="btn btn-success"> -->
-{{ form.search(class="button button1") }}
-{{ form.api(class="button button2") }}
-{{ form.clear(class="button button3") }}
-{{ form.PDF(class="button button1") }}
-{{ form.PNG(class="button button1") }}
-{{form.deduplicate(class='toggle on',
-**{'data-toggle':"toggle",'data-off':'Keep Duplicates',
-'data-on':"Hide Duplicates", 'data-onstyle':"default",
-'data-offstyle':"info",'data-width': "20%",'data-height': "5%"})}}
+
+            {{form.coordinates.label}}
+            {{form.coordinates(size=32)}}
+            {{form.lb_or_radec(class='toggle on',
+            **{'data-toggle':"toggle",'data-off':'Galactic (<i id="gal-l-symbol">&#x2113</i> <i
+                id="gal-b-symbol">b)</i>',
+            'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
+            'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
+            {% for error in form.coordinates.errors %}
+            <span style="color:red;">
+
+                {{error}}
+            </span>
+            {% endfor %}
+
         </p>
- 
- 
- 
+        <p>
+
+            {{form.radius.label}}
+            {{form.radius(size=32)}}
+            {% for error in form.radius.errors %}
+            <span style="color:red;">
+
+                {{error}}
+            </span>
+            {% endfor %}
+
+        </p>
+
+        <p>
+
+            {{form.dm.label}}
+            {{form.dm(size=32)}} (optional)
+            {% for error in form.dm.errors %}
+            <span style="color:red;">
+
+                {{error}}
+            </span>
+            {% endfor %}
+
+        </p>
+
+        <p>
+
+            {{form.dmtol.label}}
+            {{form.dmtol(size=32)}} (optional)
+            {% for error in form.dmtol.errors %}
+            <span style="color:red;">
+
+                {{error}}
+            </span>
+            {% endfor %}
+
+        </p>
+
+
+        <p>
+            <!-- <input type="submit" value="Search" class="btn btn-success"> -->
+            <!-- <input type="submit" value="API" class="btn btn-success"> -->
+            {{ form.search(class="button button1") }}
+            {{ form.api(class="button button2") }}
+            {{ form.clear(class="button button3") }}
+            {{ form.PDF(class="button button1") }}
+            {{ form.PNG(class="button button1") }}
+            {{form.deduplicate(class='toggle on',
+            **{'data-toggle':"toggle",'data-off':'Keep Duplicates',
+            'data-on':"Hide Duplicates", 'data-onstyle':"default",
+            'data-offstyle':"info",'data-width': "20%",'data-height': "5%"})}}
+        </p>
+
+
+
     </form>
 </div>
 <div class="container">
-{%if coord_string is defined %}
-<hr>
-<span>{{coord_string|safe}}</span><br><br>
-{%if nfound|int == 0 %}
-<span>No pulsars found</span><br><br>
-{% else %}
-{%if nfound|int == 1 %}
-<span>{{nfound}} pulsar found:</span><br>
-{%else%}
-<span>{{nfound}} pulsars found:</span><br>
-{%endif%}
-{%endif%}
-<span>{{html_table|safe}}</span>
-{% endif %}
+    {%if coord_string is defined %}
+    <hr>
+    <span>{{coord_string|safe}}</span><br><br>
+    {%if nfound|int == 0 %}
+    <span>No pulsars found</span><br><br>
+    {% else %}
+    {%if nfound|int == 1 %}
+    <span>{{nfound}} pulsar found:</span><br>
+    {%else%}
+    <span>{{nfound}} pulsars found:</span><br>
+    {%endif%}
+    {%endif%}
+    <span>{{html_table|safe}}</span>
+    {% endif %}
 </div>
 
 
 <div class="container">
     <hr>
-<span>
-Surveys:<br>
-{%for survey, url in surveys%}
-<a href="{{url}}">{{survey}}</a>
-{%endfor%}
-</span>
+    <span>
+        <a href="surveys">Surveys:</a><br>
+        {%for survey, url in surveys%}
+        <a href="{{url}}">{{survey}}</a>
+        {%endfor%}
+    </span>
 
-<hr>
-Inspired by <a
-href="http://hosting.astro.cornell.edu/~deneva/tabscr/tabscr.php">Julia
-Deneva's Pulsar Survey Scraper</a><br>
+    <hr>
+    Inspired by <a href="http://hosting.astro.cornell.edu/~deneva/tabscr/tabscr.php">Julia
+        Deneva's Pulsar Survey Scraper</a><br>
 
-Coordinate conversions done by <a
-href="https://www.astropy.org/">astropy</a>.  Examples:<br>
-<em>123.4 56.7</em>: decimal degrees<br>
-<em>12:34:56 -12:34:56</em>: assumed hours, degrees<br>
-<em>12h34m56s -12d34m56s</em>: explicit units<br>
-Separate coordinates with whitespace or comma
+    Coordinate conversions done by <a href="https://www.astropy.org/">astropy</a>. Examples:<br>
+    <em>123.4 56.7</em>: decimal degrees<br>
+    <em>12:34:56 -12:34:56</em>: assumed hours, degrees<br>
+    <em>12h34m56s -12d34m56s</em>: explicit units<br>
+    Separate coordinates with whitespace or comma
 
-<hr>
-Feedback: submit a <a
-href="https://github.com/dlakaplan/pulsarsurveyscraper/issues">github
-issue</a> or <a href="mailto:kaplan@uwm.edu">email</a>
-<br>
-Citation: if you found this useful in your research, please cite <a
-href="https://ascl.net/2210.001"><img
-src="https://img.shields.io/badge/ascl-2210.001-blue.svg?colorB=262255"
-alt="ascl:2210.001" /></a>.  If you find any errors or omissions please contact <a
-href="mailto:kaplan@uwm.edu">David Kaplan</a> or submit a <a
-href="https://github.com/dlakaplan/pulsarsurveyscraper/issues">github
-issue</a>. 
+    <hr>
+    Feedback: submit a <a href="https://github.com/dlakaplan/pulsarsurveyscraper/issues">github
+        issue</a> or <a href="mailto:kaplan@uwm.edu">email</a>
+    <br>
+    Citation: if you found this useful in your research, please cite <a href="https://ascl.net/2210.001"><img
+            src="https://img.shields.io/badge/ascl-2210.001-blue.svg?colorB=262255" alt="ascl:2210.001" /></a>. If you
+    find any errors or omissions please contact <a href="mailto:kaplan@uwm.edu">David Kaplan</a> or submit a <a
+        href="https://github.com/dlakaplan/pulsarsurveyscraper/issues">github
+        issue</a>.
 
-</div> 
+</div>
 
- 
+
 {% endblock %}
