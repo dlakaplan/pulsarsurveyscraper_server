@@ -411,6 +411,17 @@ def Search():
             link_tag.string = cols[5].text
             cols[5].string = ""
             cols[5].insert(0, link_tag)
+            if cols[5].text == "ATNF":
+                # link through to the catalog page
+                link = f"https://www.atnf.csiro.au/research/pulsar/psrcat/proc_form.php?version=1.70&Name=Name&RaJ=RaJ&DecJ=DecJ&P0=P0&P1=P1&DM=DM&Survey=Survey&startUserDefined=true&c1_val=&c2_val=&c3_val=&c4_val=&sort_attr=jname&sort_order=asc&condition=&pulsar_names={cols[0].text}&ephemeris=short&coords_unit=raj%2Fdecj&radius=&coords_1=&coords_2=&style=Long+with+last+digit+error&no_value=*&fsize=3&x_axis=&x_scale=linear&y_axis=&y_scale=linear&state=query&table_bottom.x=46&table_bottom.y=24"
+                link_tag = soup.new_tag(
+                    "a",
+                    href=link,
+                )
+                link_tag.string = cols[0].text
+                cols[0].string = ""
+                cols[0].insert(0, link_tag)
+
             for i in col_aligns:
                 cols[i]["align"] = col_aligns[i]
         html_table = soup
@@ -844,7 +855,6 @@ def Compute():
 
 @app.route("/get_coordtoggled_status")
 def toggled_status():
-
     coordinate_status = flask.request.args.get("status")
     # coordinate_type = "equatorial" if coordinate_status == "true" else "galactic"
     # form.lb_or_radec_selector.data = coordinate_type
