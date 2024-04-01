@@ -3,6 +3,7 @@ import flask
 from forms import (
     SearchForm,
     DMForm,
+    ASKAPSearchForm,
     parse_equcoord_and_validate,
     parse_galcoord_and_validate,
     lb_label,
@@ -12,7 +13,9 @@ from forms import (
 import numpy as np
 from astropy.coordinates import SkyCoord
 from astropy.table import Table, Column
+from astropy.time import Time
 from astropy import units as u
+from astroquery.casda import Casda
 import pandas
 import json
 import os
@@ -155,6 +158,25 @@ def format_frequency(f, digits=2):
         unit = u.Hz
     format = f"{{:.{digits}{format_type}}} {unit}"
     return format.format(f.to_value(unit))
+
+
+def get_casda(center, radius=1 * u.arcmin, vastonly=False):
+    result = Casda.query_region(center, radius=radius)
+    filter = (
+        (result["dataproduct_type"] == "cube")
+        & (result["pol_states"] == "/I/")
+        & (result["facility_name"] == "ASKAP")
+        & (result["dataproduct_subtype"] == "cont.restored.t0")
+        & (np.array(["conv" in x["filename"] for x in result]))
+    )
+    if vastonly:
+        filter = filter & (result["obs_collection"] == "VAST")
+    filtered_result = result[filter]
+    filtered_result.add_column(
+        Column(Time(filtered_result["t_min"], format="mjd").iso, name="start")
+    )
+    filtered_result.sort("t_min")
+    return filtered_result["obs_id", "t_min", "start", "t_exptime", "obs_collection"]
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -449,7 +471,7 @@ def API():
 
     parameters:
 
-    type: str ("compute" or "search")
+    type: str ("compute" or "search" or "askap)
 
     if type == "search":
     ra: float in degrees
@@ -476,10 +498,20 @@ def API():
     d: float
     dm: float
 
+    if type == "askap":
+    ra: float in degrees
+    dec: float in degrees
+    or
+    l: float in degrees
+    b: float in degrees
+
+    radius: float in arcmin
+    vastonly: bool
+
     returns JSON
     """
 
-    type = "search"
+    # type = "search"
 
     if "type" in request.args:
         type = request.args["type"].lower()
@@ -639,6 +671,81 @@ def API():
         # convert dict to JSON
         result = json.dumps(result)
 
+    elif type == "askap":
+        # default values
+        radius = 2
+
+        ra = None
+        dec = None
+        l = None
+        b = None
+
+        if "ra" in request.args:
+            ra = float(request.args["ra"])
+        if "dec" in request.args:
+            dec = float(request.args["dec"])
+        if "l" in request.args:
+            l = float(request.args["l"])
+        if "b" in request.args:
+            b = float(request.args["b"])
+        if "radius" in request.args:
+            radius = float(request.args["radius"])
+        if "vastonly" in request.args:
+            if isinstance(request.args["vastonly"], str):
+                vastonly = request.args["vastonly"] == "True"
+            elif isinstance(request.args["vastonly"], bool):
+                vastonly = vastonly
+            else:
+                return "Unable to parse 'vastonly={}'".format(request.args["vastonly"])
+
+        coord = None
+
+        if ra is not None and dec is not None:
+            try:
+                coord = SkyCoord(ra * u.deg, dec * u.deg)
+            except ValueError as e:
+                return "Unable to parse RA,Dec = '{},{}': {}".format(ra, dec, e)
+            result = {
+                "searchra": {
+                    "display_name": "Search RA (deg)",
+                    "value": coord.ra.value,
+                },
+                "searchdec": {
+                    "display_name": "Search Dec (deg)",
+                    "value": coord.dec.value,
+                },
+            }
+        elif l is not None and b is not None:
+            try:
+                coord = SkyCoord(l * u.deg, b * u.deg, frame="galactic")
+            except ValueError as e:
+                return "Unable to parse l,b = '{},{}': {}".format(l, b, e)
+            result = {
+                "searchl": {"display_name": "Search l (deg)", "value": coord.l.value},
+                "searchb": {"display_name": "Search b (deg)", "value": coord.b.value},
+            }
+        if coord is None:
+            return "Error: must specify RA,Dec or l,b"
+        result["radius"] = {"display_name": "Radius (arcmin)", "value": radius}
+
+        result_table = get_casda(coord, radius * u.arcmin, vastonly=vastonly)
+        result["nmatches"] = len(result_table)
+        for row in result_table:
+            key = row["obs_id"]
+            result[key] = {
+                "MJD": {"display_name": "Start (MJD)", "value": row["t_min"]},
+                "start": {"display_name": "Start", "value": row["start"]},
+                "exposure": {
+                    "display_name": "Exposure (sec)",
+                    "value": row["t_exptime"],
+                },
+                "program": {
+                    "display_name": "Collection",
+                    "value": row["obs_collection"],
+                },
+            }
+        # convert dict to JSON
+        result = json.dumps(result)
     return result
 
 
@@ -892,6 +999,113 @@ def Surveys():
             cols[i]["align"] = col_aligns[i]
     html_table = soup
     return render_template("surveys.html", html_table=html_table)
+
+
+@app.route("/askap", methods=["GET", "POST"])
+def ASKAPSearch():
+    """
+    askap search form route
+
+    """
+    form = ASKAPSearchForm()
+
+    # if the button has been pressed and the input is valid:
+    if form.validate_on_submit():
+        # use the validation routine
+        # to parse the coordinates
+        if form.lb_or_radec.data:
+            coord = parse_equcoord_and_validate(None, form.coordinates)
+        else:
+            coord = parse_galcoord_and_validate(None, form.coordinates)
+
+        # if we've pressed the "API" button
+        # instead of showing the tabular output redirect
+        # to the API result
+        if form.api.data:
+            return redirect(
+                url_for(
+                    "API",
+                    type="askap",
+                    ra=coord.icrs.ra.deg,
+                    dec=coord.icrs.dec.deg,
+                    radius=float(form.radius.data),
+                    vastonly=not form.vast_only_selector.data,
+                )
+            )
+
+        # or, clear the form if desired
+        if form.clear.data:
+            print("Clearing")
+            return redirect(url_for("ASKAPSearch"))
+
+        # if we've made it this far, we want the basic search
+        # including HTML table output
+
+        # first get the astropy Table
+        result = get_casda(
+            coord,
+            radius=float(form.radius.data) * u.arcmin,
+            vastonly=not form.vast_only_selector.data,
+        )
+        # make a nice string for output
+        if form.lb_or_radec.data:
+            coord_string = "Searching <strong>{:.1f}{}</strong> around <strong>{} = {} = {}, {}</strong> ...".format(
+                float(form.radius.data),
+                "arcmin",
+                radec_label.replace(" ", ","),
+                format_radec(coord),
+                *format_radec_decimal(coord),
+            )
+        else:
+            coord_string = "Searching <strong>{:.1f}{}</strong> around <strong>{} = {},{}</strong> ...".format(
+                float(form.radius.data),
+                "arcmin",
+                lb_label.replace(" ", ", "),
+                *format_lb(coord),
+            )
+
+        # go from astropy Table -> pandas dataframe -> HTML table
+        df = result.to_pandas()
+        html_table = df.to_html(
+            justify="left",
+        )
+
+        soup = BeautifulSoup(html_table, "html.parser")
+        header_row = soup.find("tr")
+        header_cols = header_row.find_all("th")
+        # add units to the header row
+        for col in header_cols:
+            if col.text == "t_min":
+                col.string = "Start (MJD)"
+            elif col.text == "t_exptime":
+                col.string = "Exposure (sec)"
+            elif col.text == "obs_collection":
+                col.string = "Program"
+            elif col.text == "start":
+                col.string = "Start"
+        # fix the alignment of various columns
+        col_aligns = {3: "right"}
+        rows = soup.find_all("tr")
+        for row in rows[1:]:
+            cols = row.find_all("td")
+            for i in col_aligns:
+                cols[i]["align"] = col_aligns[i]
+        html_table = soup
+
+        return render_template(
+            "askap.html",
+            form=form,
+            coord_string=coord_string,
+            nfound=len(result),
+            html_table=html_table,
+        )
+
+    # we can clear even if it's not valid
+    if form.clear.data:
+        print("Clearing")
+        return redirect(url_for("ASKAPSearch"))
+
+    return render_template("askap.html", form=form)
 
 
 # run flask app

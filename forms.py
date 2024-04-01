@@ -108,10 +108,14 @@ class SearchForm(FlaskForm):
     """
 
     coordinates = StringField(
-        "Search Coordinates", validators=[InputRequired(), parse_equcoord_and_validate],
+        "Search Coordinates",
+        validators=[InputRequired(), parse_equcoord_and_validate],
     )
     lb_or_radec = BooleanField(
-        "Equatorial or Galactic", validators=[], id="coord-toggle", default=True,
+        "Equatorial or Galactic",
+        validators=[],
+        id="coord-toggle",
+        default=True,
     )
     deduplicate = BooleanField("Deduplicate", validators=[], default=False)
 
@@ -147,19 +151,23 @@ class DMForm(FlaskForm):
     """
 
     coordinates = StringField(
-        radec_label, validators=[InputRequired(), parse_equcoord_and_validate],
+        radec_label,
+        validators=[InputRequired(), parse_equcoord_and_validate],
     )
     d_or_dm = DecimalField("Distance (pc)", validators=[InputRequired()])
-    d_or_dm_selector = BooleanField("Distance or DM", id="input-toggle", validators=[],)
+    d_or_dm_selector = BooleanField(
+        "Distance or DM",
+        id="input-toggle",
+        validators=[],
+    )
     lb_or_radec = BooleanField(
-        "Equatorial or Galactic", validators=[], default=True, id="coord-toggle",
+        "Equatorial or Galactic",
+        validators=[],
+        default=True,
+        id="coord-toggle",
     )
-    frequency = DecimalField(
-        "Frequency (GHz)", default=1, validators=[Optional()]
-    )
-    velocity = DecimalField(
-        "Velocity (km/s)", default=100, validators=[Optional()]
-    )
+    frequency = DecimalField("Frequency (GHz)", default=1, validators=[Optional()])
+    velocity = DecimalField("Velocity (km/s)", default=100, validators=[Optional()])
     model_selector = RadioField(
         "DM Model",
         default="ne2001",
@@ -168,5 +176,43 @@ class DMForm(FlaskForm):
     )
     model_selector = BooleanField("Model", validators=[], id="model-toggle")
     compute = SubmitField(label="Compute")
+    api = SubmitField(label="API")
+    clear = SubmitField(label="Clear")
+
+
+class ASKAPSearchForm(FlaskForm):
+    """
+    basic ASKAPSearchForm
+
+    contents:
+        coordinates (string): gets parsed and validated using parse_coord_and_validate
+        lb_or_radec (bool): whether coordinates are equatorial or galactic
+        radius (decimal)
+        vast_only_selector (radio): only include VAST observations?
+        search (button): for executing main search
+        api (button): for submitting as API
+        clear (button): for clearing the form
+    """
+
+    coordinates = StringField(
+        "Search Coordinates",
+        validators=[InputRequired(), parse_equcoord_and_validate],
+    )
+    lb_or_radec = BooleanField(
+        "Equatorial or Galactic",
+        validators=[],
+        id="coord-toggle",
+        default=True,
+    )
+
+    radius = DecimalField(
+        "Search Radius (arcmin)", default=2, validators=[InputRequired()]
+    )
+    vast_only_selector = BooleanField(
+        "Only VAST observations?",
+        id="input-toggle",
+        validators=[],
+    )
+    search = SubmitField(label="Search")
     api = SubmitField(label="API")
     clear = SubmitField(label="Clear")
