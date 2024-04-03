@@ -167,16 +167,25 @@ def get_casda(center, radius=1 * u.arcmin, vastonly=False):
         & (result["pol_states"] == "/I/")
         & (result["facility_name"] == "ASKAP")
         & (result["dataproduct_subtype"] == "cont.restored.t0")
-        & (np.array(["conv" in x["filename"] for x in result]))
+        & (
+            (np.array(["conv" in x["filename"] for x in result]))
+            | (np.array(["restored.fcor" in x["filename"] for x in result]))
+        )
     )
     if vastonly:
         filter = filter & (result["obs_collection"] == "VAST")
     filtered_result = result[filter]
+    freq = (result[filter]["em_max"].data.data * u.m).to(
+        u.MHz, equivalencies=u.spectral()
+    )
+    filtered_result.add_column(Column(freq, name="Frequency"))
     filtered_result.add_column(
         Column(Time(filtered_result["t_min"], format="mjd").iso, name="start")
     )
     filtered_result.sort("t_min")
-    return filtered_result["obs_id", "t_min", "start", "t_exptime", "obs_collection"]
+    return filtered_result[
+        "obs_id", "t_min", "start", "t_exptime", "Frequency", "obs_collection"
+    ]
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -1083,11 +1092,16 @@ def ASKAPSearch():
                 col.string = "Program"
             elif col.text == "start":
                 col.string = "Start"
+            elif col.text == "Frequency":
+                col.string = "Frequency (MHz)"
         # fix the alignment of various columns
-        col_aligns = {3: "right"}
+        col_aligns = {3: "right", 4: "right"}
         rows = soup.find_all("tr")
         for row in rows[1:]:
             cols = row.find_all("td")
+            # make exposure time and frequency integers
+            cols[3].string = str(round(float(cols[3].string)))
+            cols[4].string = str(round(float(cols[4].string)))
             for i in col_aligns:
                 cols[i]["align"] = col_aligns[i]
         html_table = soup
