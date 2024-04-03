@@ -748,6 +748,10 @@ def API():
                     "display_name": "Exposure (sec)",
                     "value": row["t_exptime"],
                 },
+                "frequency": {
+                    "display_name": "Frequency (MHz)",
+                    "value": row["Frequency"],
+                },
                 "program": {
                     "display_name": "Collection",
                     "value": row["obs_collection"],
