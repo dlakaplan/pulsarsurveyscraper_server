@@ -35,6 +35,12 @@ parameters:
     radius: float in degrees
     dm: float (optional)
     dmtol: float (optional)
+
+    arc: str (optional; "true", "1" or "yes" to search along the sidelobe arc of a N-S oriented transit telescope)
+    if arc is set:
+        arc_telescope: str, either an astropy site name or "lon lat" in decimal degrees
+        arc_epoch: str, ISO date in UTC, e.g., "YYYY", "YYYY-MM-DD", or "YYYY-MM-DDTHH:MM:SS"
+
 ```
 and the payload looks like:
 ```

@@ -85,7 +85,7 @@ def parse_galcoord_and_validate(form, data):
         )
     except u.core.UnitsError as e:
         raise ValidationError(
-            "Unable to parse input coordinate = '{},{}': {}".format(ra, dec, e)
+            "Unable to parse input coordinate = '{},{}': {}".format(gal_l, gal_b, e)
         )
     return coord
 
@@ -127,12 +127,12 @@ def parse_arc_telescope(data):
     if len(parts) == 2 and is_numeric(parts[0]) and is_numeric(parts[1]):
         try:
             telescope = EarthLocation(lon=parts[0], lat=parts[1])
-        except Exception as e:
+        except Exception as _:
             raise ValidationError(f"Unable to parse telescope coordinates.")
     else:
         try:
-            telescope = EarthLocation.of_site(parts[0])
-        except Exception as e:
+            telescope = EarthLocation.of_site(parts[0].strip())
+        except Exception as _:
             raise ValidationError(f"Unable to parse the input as a telescope site, or the telescope name is unknown.")
     
     return telescope
@@ -173,10 +173,10 @@ def parse_arc_epoch(data):
     if it can parse, returns astropy Time object
     if it cannot, raises ValidationError
     """
-    
+
     try:
         epoch = pulsarsurveyscraper.parse_epoch(data)
-    except Exception as e:
+    except Exception as _:
         raise ValidationError(
             "Unable to parse arc epoch = '{}'".format(data)
         )

@@ -504,11 +504,6 @@ def API():
                 return "Error: no epoch specified"
 
             # Make a dummy form object
-            class DummyForm:
-                def __init__(self):
-                    self.arc_telescope = request.args["arc_telescope"]
-                    self.arc_epoch = request.args["arc_epoch"]
-            form = DummyForm()
             try:
                 search_sidelobe_arc = {
                     "telescope": parse_arc_telescope(request.args["arc_telescope"]),
