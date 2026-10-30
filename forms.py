@@ -115,8 +115,15 @@ def parse_arc_telescope_and_validate(form, data):
     if it cannot, raises ValidationError
     """
 
+    def is_numeric(s):
+        try:
+            float(s)
+            return True
+        except ValueError:
+            return False
+
     # Check if the arc mode is on
-    if form.parsed_cone_or_arc != "arc":
+    if form is not None and form.parsed_cone_or_arc != "arc":
         return
 
     # Check if the input is empty
@@ -125,21 +132,20 @@ def parse_arc_telescope_and_validate(form, data):
 
     parts = data.data.split()
 
-    if len(parts) == 1:
-        try:
-            telescope = EarthLocation.of_site(parts[0])
-        except Exception as e:
-            raise ValidationError(f"Unknown telescope site.")
-    elif len(parts) == 3:
+    if len(parts) == 2 and is_numeric(parts[0]) and is_numeric(parts[1]):
         try:
             telescope = EarthLocation(lon=parts[0], lat=parts[1])
         except Exception as e:
             raise ValidationError(f"Unable to parse telescope coordinates.")
     else:
-        raise ValidationError("Unable to parse telescope name or coordinates.")
+        try:
+            telescope = EarthLocation.of_site(parts[0])
+        except Exception as e:
+            raise ValidationError(f"Unable to parse the input as a telescope site, or the telescope name is unknown.")
 
     # Set the parsed telescope on the form for later use
-    form.parsed_arc_telescope = telescope
+    if form is not None:
+        form.parsed_arc_telescope = telescope
     
     return telescope
 
@@ -147,13 +153,13 @@ def parse_arc_epoch_and_validate(form, data):
     """
     parse arc epoch input and validate it
 
-    the input is a string representing the epoch (e.g., 'J2000')
+    the input is a string representing an arc epoch
     if it can parse, returns astropy Time object
     if it cannot, raises ValidationError
     """
 
     # Check if the arc mode is on
-    if form.parsed_cone_or_arc != "arc":
+    if form is not None and form.parsed_cone_or_arc != "arc":
         return
 
     # Check if the input is empty
@@ -168,7 +174,8 @@ def parse_arc_epoch_and_validate(form, data):
         )
 
     # Set the parsed epoch on the form for later use
-    form.parsed_arc_epoch = epoch
+    if form is not None:
+        form.parsed_arc_epoch = epoch
 
     return epoch
 

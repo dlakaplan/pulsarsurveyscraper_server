@@ -22,7 +22,7 @@ from bs4 import BeautifulSoup, Tag
 import pulsarsurveyscraper
 import pulsarsurveyscraper.output
 
-import pygedm
+# import pygedm
 
 degree_symbol = "\N{DEGREE SIGN}"
 arcmin_symbol = "\N{PRIME}"
@@ -156,6 +156,28 @@ def format_frequency(f, digits=2):
     format = f"{{:.{digits}{format_type}}} {unit}"
     return format.format(f.to_value(unit))
 
+def build_api_payload(form, coord, DM, DMtol):
+    payload = {"type": "search"}
+    
+    if form.lb_or_radec.data:
+        payload["ra"] = coord.icrs.ra.deg
+        payload["dec"] = coord.icrs.dec.deg
+    else:
+        payload["l"] = coord.galactic.l.deg
+        payload["b"] = coord.galactic.b.deg
+        
+    payload["radius"] = float(form.radius.data)
+
+    if DM is not None:
+        payload["dm"] = DM
+        payload["dmtol"] = DMtol
+
+    if form.parsed_cone_or_arc == "arc":
+        payload["arc"] = True
+        payload["arc_telescope"] = form.arc_telescope.data
+        payload["arc_epoch"] = form.arc_epoch.data
+
+    return payload
 
 @app.route("/", methods=["GET", "POST"])
 @app.route("/search", methods=["GET", "POST"])
@@ -199,30 +221,10 @@ def Search():
         # instead of showing the tabular output redirect
         # to the API result
         if form.api.data:
-            payload = {"type": "search"}
-
-            if form.lb_or_radec.data:
-                payload["ra"] = coord.icrs.ra.deg
-                payload["dec"] = coord.icrs.dec.deg
-            else:
-                payload["l"] = coord.galactic.l.deg
-                payload["b"] = coord.galactic.b.deg
-                
-            payload["radius"] = float(form.radius.data)
-
-            if DM is not None:
-                payload["dm"] = DM
-                payload["dmtol"] = DMtol
-
-            if form.parsed_cone_or_arc == "arc":
-                payload["arc"] = True
-                payload["arc_telescope"] = form.arc_telescope.data
-                payload["arc_epoch"] = form.arc_epoch.data
-
             return redirect(
                 url_for(
                     "API",
-                    **payload
+                    **build_api_payload(form, coord, DM, DMtol)
                 )
             )
 
@@ -294,50 +296,30 @@ def Search():
             # Get the global URL for the query web page:
             # do it without actually querying
 
-
-            # Construct the payload for the query URL based on the form inputs and coordinates
-            payload = {"type": "search"}
-            
-            if form.lb_or_radec.data:
-                payload["ra"] = coord.icrs.ra.deg
-                payload["dec"] = coord.icrs.dec.deg
-            else:
-                payload["l"] = coord.galactic.l.deg
-                payload["b"] = coord.galactic.b.deg
-                
-            payload["radius"] = float(form.radius.data)
-
-            if DM is not None:
-                payload["dm"] = DM
-                payload["dmtol"] = DMtol
-
-            if form.parsed_cone_or_arc == "arc":
-                payload["arc"] = True
-                payload["arc_telescope"] = form.arc_telescope.data
-                payload["arc_epoch"] = form.arc_epoch.data
-
             # Construct the query URL using the payload dictionary
             query_url = url_for(
                 "API",
-                **payload
+                **build_api_payload(form, coord, DM, DMtol)
             )
 
             format = "pdf" if form.PDF.data else "png"
             if form.lb_or_radec.data:
                 search_query_txt = (
-                    "Searching {:.1f}deg around RA,Dec = {} = {}d,{}d".format(
+                    "Searching {:.1f}deg around RA,Dec = {} = {}d,{}d{}".format(
                         float(form.radius.data),
                         coord.to_string("hmsdms", sep=":"),
                         coord.ra.to_string(decimal=True),
                         coord.dec.to_string(decimal=True, alwayssign=True),
+                        " along the sidelobe arc" if form.parsed_cone_or_arc == "arc" else ""
                     )
                 )
 
             else:
-                search_query_txt = "Searching {:.1f}deg around l,b = {}d,{}d".format(
+                search_query_txt = "Searching {:.1f}deg around l,b = {}d,{}d{}".format(
                     float(form.radius.data),
                     coord.l.to_string(decimal=True),
                     coord.b.to_string(decimal=True, alwayssign=True),
+                    " along the sidelobe arc" if form.parsed_cone_or_arc == "arc" else ""
                 )
 
             output = pulsarsurveyscraper.output.make_output(
@@ -510,7 +492,7 @@ def API():
             dmtol = float(request.args["dmtol"])
 
         search_sidelobe_arc = None
-        if "arc" in request.args and request.args["arc"]:
+        if "arc" in request.args and request.args["arc"].lower() in ("1", "true", "yes"):
             # Check if telescope specified
             if "arc_telescope" not in request.args:
                 return "Error: no telescope specified"
@@ -520,9 +502,12 @@ def API():
                 return "Error: no epoch specified"
 
             # Parse sidelobe arc arguments
-            search_sidelobe_arc = pulsarsurveyscraper.parse_sidelobe_arc_args(
-                [request.args["arc_telescope"] + " " + request.args["arc_epoch"]]
-            )
+            try:
+                search_sidelobe_arc = pulsarsurveyscraper.parse_sidelobe_arc_args(
+                    [request.args["arc_telescope"], request.args["arc_epoch"]]
+                )
+            except Exception as e:
+                return "Unable to parse arc_telescope or arc_epoch: {}".format(e)
 
         result = pulsar_table.search(
             coord,
@@ -893,4 +878,4 @@ def Surveys():
 
 # run flask app
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(port=5001, debug=True)
