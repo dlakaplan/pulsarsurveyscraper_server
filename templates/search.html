@@ -19,13 +19,15 @@
 
         <p>
 
-            {{form.coordinates.label}}
-            {{form.coordinates(size=32)}}
-            {{form.lb_or_radec(class='toggle on',
-            **{'data-toggle':"toggle",'data-off':'Galactic (<i id="gal-l-symbol">&#x2113</i> <i
-                id="gal-b-symbol">b)</i>',
-            'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
-            'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
+            <label class="form-label">{{form.coordinates.label}}</label>
+            <span class="form-input">{{form.coordinates(size=32)}}</span>
+            <span class="form-option">
+                {{form.lb_or_radec(class='toggle on',
+                **{'data-toggle':"toggle",'data-off':'Galactic (<i id="gal-l-symbol">&#x2113</i> <i
+                    id="gal-b-symbol">b)</i>',
+                'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
+                'data-offstyle':"primary",'data-width': "20%",'data-size': "small"})}}
+            </span>
             {% for error in form.coordinates.errors %}
             <span style="color:red;">
 
@@ -36,8 +38,14 @@
         </p>
         <p>
 
-            {{form.radius.label}}
-            {{form.radius(size=32)}}
+            <label class="form-label">{{form.radius.label}}</label>
+            <span class="form-input">{{form.radius(size=32)}}</span>
+            <span class="form-option">
+                {{form.cone_or_arc(class='toggle on',
+                **{'data-toggle':"toggle",'data-off':'Sidelobe Arc',
+                'data-on':"Cone", 'data-onstyle':"default",
+                'data-offstyle':"warning",'data-width': "20%",'data-size': "small"})}}
+            </span>
             {% for error in form.radius.errors %}
             <span style="color:red;">
 
@@ -47,10 +55,73 @@
 
         </p>
 
+        <div id="sidelobe-arc-panel" style="display: none;" >
+            <hr>
+
+            <p style="margin-bottom: 1em;">
+                <i>
+                    Following parameters are required to search along the sidelobe arc of a north-south oriented transit telescope:
+                </i>
+            </p>
+
+            <p>
+
+                <label class="form-label">{{form.arc_telescope.label}}</label>
+                <span class="form-input">{{form.arc_telescope(size=32)}}</span>
+                {% for error in form.arc_telescope.errors %}
+                <span style="color:red;">
+
+                    {{error}}
+                </span>
+                {% endfor %}
+
+            </p>
+
+            <p>
+
+                <label class="form-label">{{form.arc_epoch.label}}</label>
+                <span class="form-input">{{form.arc_epoch(size=32)}}</span>
+                {% for error in form.arc_epoch.errors %}
+                <span style="color:red;">
+
+                    {{error}}
+                </span>
+                {% endfor %}
+
+            </p>
+
+            <hr>
+
+            <script>
+                function toggleSidelobeArcPanel() {
+                    if ($('#search-sidelobe-arc').is(':checked')) {
+                        $('#sidelobe-arc-panel').hide();
+                    } else {
+                        $('#sidelobe-arc-panel').show();
+                    }
+                }
+                function fillInEpochNow() {
+                    $('#arc_epoch').val(
+                        new Date().toISOString().split('T')[0]
+                    );
+                }
+                $(document).ready(function(){
+                    toggleSidelobeArcPanel();
+                    if ($('#arc_epoch').val() === '') {
+                        fillInEpochNow();
+                    }
+                });
+                $('#search-sidelobe-arc').change(function(){
+                    toggleSidelobeArcPanel();
+                });
+            </script>
+        </div>
+
         <p>
 
-            {{form.dm.label}}
-            {{form.dm(size=32)}} (optional)
+            <label class="form-label">{{form.dm.label}}</label>
+            <span class="form-input">{{form.dm(size=32)}}</span> 
+            <span class="form-option">(optional)</span>
             {% for error in form.dm.errors %}
             <span style="color:red;">
 
@@ -62,8 +133,9 @@
 
         <p>
 
-            {{form.dmtol.label}}
-            {{form.dmtol(size=32)}} (optional)
+            <label class="form-label">{{form.dmtol.label}}</label>
+            <span class="form-input">{{form.dmtol(size=32)}}</span> 
+            <span class="form-option">(optional)</span>
             {% for error in form.dmtol.errors %}
             <span style="color:red;">
 

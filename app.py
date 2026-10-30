@@ -199,53 +199,32 @@ def Search():
         # instead of showing the tabular output redirect
         # to the API result
         if form.api.data:
-            if DM is None:
-                if form.lb_or_radec.data:
-                    return redirect(
-                        url_for(
-                            "API",
-                            type="search",
-                            ra=coord.icrs.ra.deg,
-                            dec=coord.icrs.dec.deg,
-                            radius=float(form.radius.data),
-                        )
-                    )
-                else:
-                    return redirect(
-                        url_for(
-                            "API",
-                            type="search",
-                            l=coord.galactic.l.deg,
-                            b=coord.galactic.b.deg,
-                            radius=float(form.radius.data),
-                        )
-                    )
+            payload = {"type": "search"}
 
+            if form.lb_or_radec.data:
+                payload["ra"] = coord.icrs.ra.deg
+                payload["dec"] = coord.icrs.dec.deg
             else:
-                if form.lb_or_radec.data:
-                    return redirect(
-                        url_for(
-                            "API",
-                            type="search",
-                            ra=coord.icrs.ra.deg,
-                            dec=coord.icrs.dec.deg,
-                            radius=float(form.radius.data),
-                            dm=DM,
-                            dmtol=DMtol,
-                        )
-                    )
-                else:
-                    return redirect(
-                        url_for(
-                            "API",
-                            type="search",
-                            l=coord.galactic.l.deg,
-                            b=coord.galactic.b.deg,
-                            radius=float(form.radius.data),
-                            dm=DM,
-                            dmtol=DMtol,
-                        )
-                    )
+                payload["l"] = coord.galactic.l.deg
+                payload["b"] = coord.galactic.b.deg
+                
+            payload["radius"] = float(form.radius.data)
+
+            if DM is not None:
+                payload["dm"] = DM
+                payload["dmtol"] = DMtol
+
+            if form.parsed_cone_or_arc == "arc":
+                payload["arc"] = True
+                payload["arc_telescope"] = form.arc_telescope.data
+                payload["arc_epoch"] = form.arc_epoch.data
+
+            return redirect(
+                url_for(
+                    "API",
+                    **payload
+                )
+            )
 
         # or, clear the form if desired
         if form.clear.data:
@@ -262,6 +241,10 @@ def Search():
                 DM=DM,
                 DM_tolerance=DMtol,
                 deduplicate=deduplicate,
+                search_sidelobe_arc={
+                    "telescope": form.parsed_arc_telescope,
+                    "epoch": form.parsed_arc_epoch,
+                } if form.parsed_cone_or_arc == "arc" else None
             )
         else:
             result = pulsar_table.search(
@@ -271,6 +254,10 @@ def Search():
                 DM_tolerance=DMtol,
                 return_native=True,
                 deduplicate=deduplicate,
+                search_sidelobe_arc={
+                    "telescope": form.parsed_arc_telescope,
+                    "epoch": form.parsed_arc_epoch,
+                } if form.parsed_cone_or_arc == "arc" else None
             )
 
         result["P"][result["P"] < 0] = np.nan
@@ -299,47 +286,41 @@ def Search():
                 )
             )
 
+        if form.parsed_cone_or_arc == "arc":
+            coord_string += "<br>Searching <strong>along the sidelobe arc</strong> and showing the <i>angular separation to the arc</i> instead of the search coordinates in the distance column. "
+
         if form.PNG.data or form.PDF.data:
             # we want a PDF or PNG output
             # Get the global URL for the query web page:
             # do it without actually querying
-            if DM is None:
-                if form.lb_or_radec.data:
-                    query_url = url_for(
-                        "API",
-                        ra=coord.icrs.ra.deg,
-                        dec=coord.icrs.dec.deg,
-                        radius=float(form.radius.data),
-                    )
 
-                else:
-                    query_url = url_for(
-                        "API",
-                        l=coord.galactic.l.deg,
-                        b=coord.galactic.b.deg,
-                        radius=float(form.radius.data),
-                    )
 
+            # Construct the payload for the query URL based on the form inputs and coordinates
+            payload = {"type": "search"}
+            
+            if form.lb_or_radec.data:
+                payload["ra"] = coord.icrs.ra.deg
+                payload["dec"] = coord.icrs.dec.deg
             else:
-                if form.lb_or_radec.data:
-                    query_url = url_for(
-                        "API",
-                        ra=coord.icrs.ra.deg,
-                        dec=coord.icrs.dec.deg,
-                        radius=float(form.radius.data),
-                        dm=DM,
-                        dmtol=DMtol,
-                    )
+                payload["l"] = coord.galactic.l.deg
+                payload["b"] = coord.galactic.b.deg
+                
+            payload["radius"] = float(form.radius.data)
 
-                else:
-                    query_url = url_for(
-                        "API",
-                        l=coord.galactic.l.deg,
-                        b=coord.galactic.b.deg,
-                        radius=float(form.radius.data),
-                        dm=DM,
-                        dmtol=DMtol,
-                    )
+            if DM is not None:
+                payload["dm"] = DM
+                payload["dmtol"] = DMtol
+
+            if form.parsed_cone_or_arc == "arc":
+                payload["arc"] = True
+                payload["arc_telescope"] = form.arc_telescope.data
+                payload["arc_epoch"] = form.arc_epoch.data
+
+            # Construct the query URL using the payload dictionary
+            query_url = url_for(
+                "API",
+                **payload
+            )
 
             format = "pdf" if form.PDF.data else "png"
             if form.lb_or_radec.data:
@@ -528,6 +509,21 @@ def API():
         if "dmtol" in request.args:
             dmtol = float(request.args["dmtol"])
 
+        search_sidelobe_arc = None
+        if "arc" in request.args and request.args["arc"]:
+            # Check if telescope specified
+            if "arc_telescope" not in request.args:
+                return "Error: no telescope specified"
+
+            # Check if epoch specified
+            if "arc_epoch" not in request.args:
+                return "Error: no epoch specified"
+
+            # Parse sidelobe arc arguments
+            search_sidelobe_arc = pulsarsurveyscraper.parse_sidelobe_arc_args(
+                [request.args["arc_telescope"] + " " + request.args["arc_epoch"]]
+            )
+
         result = pulsar_table.search(
             coord,
             radius=radius * u.deg,
@@ -536,6 +532,7 @@ def API():
             return_json=True,
             return_native=True,
             deduplicate=True,
+            search_sidelobe_arc=search_sidelobe_arc
         )
 
     # compute DM at a distance

@@ -2,7 +2,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, DecimalField, SubmitField, RadioField, BooleanField
 from wtforms.validators import InputRequired, ValidationError, Optional
 import re
-from astropy.coordinates import SkyCoord
+from astropy.coordinates import SkyCoord, EarthLocation
 from astropy import units as u
 
 import pulsarsurveyscraper
@@ -89,6 +89,89 @@ def parse_galcoord_and_validate(form, data):
         )
     return coord
 
+def parse_cone_or_arc_and_validate(form, data):
+    """
+    parse cone or arc mode input and validate it
+
+    the input is a boolean (True for cone, False for arc)
+    if it can parse, returns the boolean value
+    if it cannot, raises ValidationError
+    """
+
+    if data.data not in [True, False]:
+        raise ValidationError("Invalid cone or arc mode input.")
+
+    form.parsed_cone_or_arc = "cone" if data.data else "arc"
+
+    return data.data
+
+
+def parse_arc_telescope_and_validate(form, data):
+    """
+    parse arc telescope input and validate it
+
+    the input is a string (either a site name or lon lat pair)
+    if it can parse, returns astropy EarthLocation object
+    if it cannot, raises ValidationError
+    """
+
+    # Check if the arc mode is on
+    if form.parsed_cone_or_arc != "arc":
+        return
+
+    # Check if the input is empty
+    if not data.data:
+        raise ValidationError("Telescope input is required for arc mode.")
+
+    parts = data.data.split()
+
+    if len(parts) == 1:
+        try:
+            telescope = EarthLocation.of_site(parts[0])
+        except Exception as e:
+            raise ValidationError(f"Unknown telescope site.")
+    elif len(parts) == 3:
+        try:
+            telescope = EarthLocation(lon=parts[0], lat=parts[1])
+        except Exception as e:
+            raise ValidationError(f"Unable to parse telescope coordinates.")
+    else:
+        raise ValidationError("Unable to parse telescope name or coordinates.")
+
+    # Set the parsed telescope on the form for later use
+    form.parsed_arc_telescope = telescope
+    
+    return telescope
+
+def parse_arc_epoch_and_validate(form, data):
+    """
+    parse arc epoch input and validate it
+
+    the input is a string representing the epoch (e.g., 'J2000')
+    if it can parse, returns astropy Time object
+    if it cannot, raises ValidationError
+    """
+
+    # Check if the arc mode is on
+    if form.parsed_cone_or_arc != "arc":
+        return
+
+    # Check if the input is empty
+    if not data.data:
+        raise ValidationError("Epoch input is required for arc mode.")
+
+    try:
+        epoch = pulsarsurveyscraper.parse_epoch(data.data)
+    except Exception as e:
+        raise ValidationError(
+            "Unable to parse arc epoch = '{}'".format(data.data)
+        )
+
+    # Set the parsed epoch on the form for later use
+    form.parsed_arc_epoch = epoch
+
+    return epoch
+
 
 class SearchForm(FlaskForm):
     """
@@ -113,8 +196,17 @@ class SearchForm(FlaskForm):
     lb_or_radec = BooleanField(
         "Equatorial or Galactic", validators=[], id="coord-toggle", default=True,
     )
+    cone_or_arc = BooleanField(
+        "Search Sidelobe Arc", validators=[parse_cone_or_arc_and_validate], id="search-sidelobe-arc", default=True,
+    )
     deduplicate = BooleanField("Deduplicate", validators=[], default=False)
 
+    arc_telescope = StringField(
+        "Telescope Name or Coordinates", validators=[parse_arc_telescope_and_validate]
+    )
+    arc_epoch = StringField(
+        "Observation Date", validators=[parse_arc_epoch_and_validate]
+    )
     radius = DecimalField(
         "Search Radius (deg)", default=5, validators=[InputRequired()]
     )
