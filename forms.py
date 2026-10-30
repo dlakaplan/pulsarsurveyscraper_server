@@ -106,15 +106,15 @@ def parse_cone_or_arc_and_validate(form, data):
     return data.data
 
 
-def parse_arc_telescope_and_validate(form, data):
+def parse_arc_telescope(data):
     """
-    parse arc telescope input and validate it
+    parse arc telescope input
 
     the input is a string (either a site name or lon lat pair)
     if it can parse, returns astropy EarthLocation object
     if it cannot, raises ValidationError
     """
-
+    
     def is_numeric(s):
         try:
             float(s)
@@ -122,15 +122,7 @@ def parse_arc_telescope_and_validate(form, data):
         except ValueError:
             return False
 
-    # Check if the arc mode is on
-    if form is not None and form.parsed_cone_or_arc != "arc":
-        return
-
-    # Check if the input is empty
-    if not data.data:
-        raise ValidationError("Telescope input is required for arc mode.")
-
-    parts = data.data.split()
+    parts = data.split()
 
     if len(parts) == 2 and is_numeric(parts[0]) and is_numeric(parts[1]):
         try:
@@ -142,12 +134,54 @@ def parse_arc_telescope_and_validate(form, data):
             telescope = EarthLocation.of_site(parts[0])
         except Exception as e:
             raise ValidationError(f"Unable to parse the input as a telescope site, or the telescope name is unknown.")
+    
+    return telescope
+
+
+def parse_arc_telescope_and_validate(form, data):
+    """
+    parse arc telescope input and validate it
+
+    the input is a string (either a site name or lon lat pair)
+    if it can parse, returns astropy EarthLocation object
+    if it cannot, raises ValidationError
+    """
+
+    # Check if the arc mode is on
+    if form is not None and form.parsed_cone_or_arc != "arc":
+        return
+
+    # Check if the input is empty
+    if not data.data:
+        raise ValidationError("Telescope input is required for arc mode.")
+
+    # Parse the telescope input using the helper function
+    telescope = parse_arc_telescope(data.data)
 
     # Set the parsed telescope on the form for later use
     if form is not None:
         form.parsed_arc_telescope = telescope
     
     return telescope
+
+
+def parse_arc_epoch(data):
+    """
+    parse arc epoch input
+
+    the input is a string representing an arc epoch
+    if it can parse, returns astropy Time object
+    if it cannot, raises ValidationError
+    """
+    
+    try:
+        epoch = pulsarsurveyscraper.parse_epoch(data)
+    except Exception as e:
+        raise ValidationError(
+            "Unable to parse arc epoch = '{}'".format(data)
+        )
+
+    return epoch
 
 def parse_arc_epoch_and_validate(form, data):
     """
@@ -166,12 +200,8 @@ def parse_arc_epoch_and_validate(form, data):
     if not data.data:
         raise ValidationError("Epoch input is required for arc mode.")
 
-    try:
-        epoch = pulsarsurveyscraper.parse_epoch(data.data)
-    except Exception as e:
-        raise ValidationError(
-            "Unable to parse arc epoch = '{}'".format(data.data)
-        )
+    # Parse the epoch input using the helper function
+    epoch = parse_arc_epoch(data.data)
 
     # Set the parsed epoch on the form for later use
     if form is not None:

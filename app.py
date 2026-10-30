@@ -5,6 +5,8 @@ from forms import (
     DMForm,
     parse_equcoord_and_validate,
     parse_galcoord_and_validate,
+    parse_arc_telescope,
+    parse_arc_epoch,
     lb_label,
     radec_label,
 )
@@ -22,7 +24,7 @@ from bs4 import BeautifulSoup, Tag
 import pulsarsurveyscraper
 import pulsarsurveyscraper.output
 
-# import pygedm
+import pygedm
 
 degree_symbol = "\N{DEGREE SIGN}"
 arcmin_symbol = "\N{PRIME}"
@@ -501,11 +503,17 @@ def API():
             if "arc_epoch" not in request.args:
                 return "Error: no epoch specified"
 
-            # Parse sidelobe arc arguments
+            # Make a dummy form object
+            class DummyForm:
+                def __init__(self):
+                    self.arc_telescope = request.args["arc_telescope"]
+                    self.arc_epoch = request.args["arc_epoch"]
+            form = DummyForm()
             try:
-                search_sidelobe_arc = pulsarsurveyscraper.parse_sidelobe_arc_args(
-                    [request.args["arc_telescope"], request.args["arc_epoch"]]
-                )
+                search_sidelobe_arc = {
+                    "telescope": parse_arc_telescope(request.args["arc_telescope"]),
+                    "epoch": parse_arc_epoch(request.args["arc_epoch"])
+                }
             except Exception as e:
                 return "Unable to parse arc_telescope or arc_epoch: {}".format(e)
 
@@ -878,4 +886,4 @@ def Surveys():
 
 # run flask app
 if __name__ == "__main__":
-    app.run(port=5001, debug=True)
+    app.run(debug=True)
