@@ -127,7 +127,7 @@ def parse_arc_telescope(data):
             raise ValidationError(f"Unable to parse telescope coordinates.")
     else:
         try:
-            telescope = EarthLocation.of_site(parts[0].strip())
+            telescope = EarthLocation.of_site(data.strip())
         except Exception as _:
             raise ValidationError(f"Unable to parse the input as a telescope site, or the telescope name is unknown.")
     

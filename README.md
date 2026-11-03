@@ -39,7 +39,7 @@ parameters:
     arc: str (optional; "true", "1" or "yes" to search along the sidelobe arc of a CHIME-like N-S oriented transit telescope)
     if arc is set:
         arc_telescope: str, either an astropy site name or "lon lat" in decimal degrees
-        arc_epoch: str, ISO date in UTC, e.g., "YYYY", "YYYY-MM-DD", or "YYYY-MM-DDTHH:MM:SS"
+        arc_epoch: str, ISO date in UTC or MJDs, e.g., "YYYY", "YYYY-MM-DD", "YYYY-MM-DDTHH:MM:SS", or "61000"
 
 ```
 and the payload looks like:

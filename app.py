@@ -291,7 +291,17 @@ def Search():
             )
 
         if form.parsed_cone_or_arc == "arc":
-            coord_string += "<br>Searching along a CHIME-like sidelobe arc when observed at <strong>{}</strong>... ".format(
+            telescope_name = "unknown telescope at {}{}, {}{}".format(
+                np.round(form.parsed_arc_telescope.lon.deg, 2),
+                degree_symbol,
+                np.round(form.parsed_arc_telescope.lat.deg, 2),
+                degree_symbol
+            )
+            if form.parsed_arc_telescope.info.name:
+                telescope_name = form.parsed_arc_telescope.info.name
+
+            coord_string += "<br>Searching along the sidelobe arc of a CHIME-like telescope (<strong>{}</strong>) when observed at <strong>{}</strong>... ".format(
+                telescope_name,
                 form.parsed_arc_epoch.to_datetime() if form.parsed_arc_epoch else "unknown epoch"
             )
 
@@ -368,8 +378,14 @@ def Search():
                 col.string = "l (deg)"
             elif col.text == "b":
                 col.string = "b (deg)"
+
         # fix the alignment of various columns
         col_aligns = {3: "right", 4: "right", 5: "center", 7: "right"}
+
+        # align the sidelobe arc distance
+        if "Sidelobe Arc Distance" in df.columns:
+            col_aligns[df.columns.get_loc("Sidelobe Arc Distance")] = "right"
+        
         rows = soup.find_all("tr")
         for row in rows[1:]:
             cols = row.find_all("td")
