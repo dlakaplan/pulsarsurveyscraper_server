@@ -291,7 +291,7 @@ def Search():
             )
 
         if form.parsed_cone_or_arc == "arc":
-            telescope_name = "unknown telescope at {}{}, {}{}".format(
+            telescope_name = "telescope at {}{}, {}{}".format(
                 np.round(form.parsed_arc_telescope.lon.deg, 2),
                 degree_symbol,
                 np.round(form.parsed_arc_telescope.lat.deg, 2),
