@@ -42,7 +42,7 @@
             <span class="form-input">{{form.radius(size=32)}}</span>
             <span class="form-option">
                 {{form.cone_or_arc(class='toggle on',
-                **{'data-toggle':"toggle",'data-off':'Sidelobe Arc',
+                **{'data-toggle':"toggle",'data-off':'CHIME Sidelobe Arc',
                 'data-on':"Cone", 'data-onstyle':"default",
                 'data-offstyle':"warning",'data-width': "20%",'data-size': "small"})}}
             </span>
@@ -60,7 +60,7 @@
 
             <p style="margin-bottom: 1em;">
                 <i>
-                    Following parameters are required to search along the sidelobe arc of a north-south oriented transit telescope:
+                    Following parameters are required to search along the sidelobe arc of a CHIME-like north-south oriented transit telescope:
                 </i>
             </p>
 
@@ -81,6 +81,9 @@
 
                 <label class="form-label">{{form.arc_epoch.label}}</label>
                 <span class="form-input">{{form.arc_epoch(size=32)}}</span>
+                <span class="form-option">
+                    (YYYY-MM-DD or MJD)
+                </span>
                 {% for error in form.arc_epoch.errors %}
                 <span style="color:red;">
 

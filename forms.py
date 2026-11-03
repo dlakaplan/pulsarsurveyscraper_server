@@ -239,7 +239,7 @@ class SearchForm(FlaskForm):
     deduplicate = BooleanField("Deduplicate", validators=[], default=False)
 
     arc_telescope = StringField(
-        "Telescope Name or Coordinates", validators=[parse_arc_telescope_and_validate]
+        "Telescope Name or Coordinates", validators=[parse_arc_telescope_and_validate], default="CHIME"
     )
     arc_epoch = StringField(
         "Observation Date", validators=[parse_arc_epoch_and_validate]

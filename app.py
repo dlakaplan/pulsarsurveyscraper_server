@@ -291,7 +291,9 @@ def Search():
             )
 
         if form.parsed_cone_or_arc == "arc":
-            coord_string += "<br>Searching <strong>along the sidelobe arc</strong> and showing the <i>angular separation to the arc</i> instead of the search coordinates in the distance column. "
+            coord_string += "<br>Searching along a CHIME-like sidelobe arc when observed at <strong>{}</strong>... ".format(
+                form.parsed_arc_epoch.to_datetime() if form.parsed_arc_epoch else "unknown epoch"
+            )
 
         if form.PNG.data or form.PDF.data:
             # we want a PDF or PNG output
@@ -342,6 +344,7 @@ def Search():
             formatters={
                 "P": lambda x: "%.2f" % x,
                 "Distance": lambda x: "%.2f" % x,
+                "Sidelobe Arc Distance": lambda x: "%.2f" % x,
             },
             justify="left",
         )
@@ -355,6 +358,8 @@ def Search():
                 col.string = "P (ms)"
             elif col.text == "Distance":
                 col.string = "Distance (deg)"
+            elif col.text == "Sidelobe Arc Distance":
+                col.string = "Sidelobe Arc Distance (deg)"
             elif col.text == "RA":
                 col.string = "RA (deg)"
             elif col.text == "Dec":
