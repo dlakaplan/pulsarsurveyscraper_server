@@ -300,7 +300,8 @@ def Search():
             if form.parsed_arc_telescope.info.name:
                 telescope_name = form.parsed_arc_telescope.info.name
 
-            coord_string += "<br>Searching along the sidelobe arc of a CHIME-like telescope (<strong>{}</strong>) when observed at <strong>{}</strong>... ".format(
+            # coord_string += "<br>Searching along the sidelobe arc of a CHIME-like telescope (<strong>{}</strong>) when observed at <strong>{}</strong>... ".format(
+            coord_string += "<br>Searching along the sidelobe arc of <strong>{}</strong> when observed at <strong>{}</strong>... ".format(
                 telescope_name,
                 form.parsed_arc_epoch.to_datetime() if form.parsed_arc_epoch else "unknown epoch"
             )

@@ -230,7 +230,8 @@ class SearchForm(FlaskForm):
         "Equatorial or Galactic", validators=[], id="coord-toggle", default=True,
     )
     sidelobe_arc = BooleanField(
-        "Search along a CHIME-like sidelobe arc instead of a cone",
+        # "Search along a CHIME-like sidelobe arc instead of a cone",
+        "Search along CHIME sidelobe arc instead of a cone",
         validators=[parse_sidelobe_arc_and_validate],
         id="search-sidelobe-arc",
         default=False,

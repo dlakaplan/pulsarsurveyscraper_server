@@ -90,12 +90,14 @@
 
                 <p style="margin-bottom: 1em;">
                     <i>
-                        The following parameters are required to search along the sidelobe arc of a CHIME-like, north-south oriented transit telescope. 
+                        <!-- The following parameters are required to search along the sidelobe arc of a CHIME-like, north-south oriented transit telescope.  -->
+                        The following parameters are required to search along the sidelobe arc of the CHIME telescope. 
                         Use the "Search Radius" input above to specify the maximum angular separation from the arc. Query output will include each pulsar's separation in a “Sidelobe Arc Distance” column.
                     </i>
                 </p>
 
-                <p>
+                <!-- Hide the input for arc_telescope to default to CHIME, but keeping the code just in case a future change requires it -->
+                <p style="display: none;">
 
                     <label class="form-label">{{form.arc_telescope.label}}</label>
                     <span class="form-input">{{form.arc_telescope(size=32)}}</span>
