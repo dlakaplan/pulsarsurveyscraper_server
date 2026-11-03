@@ -89,19 +89,15 @@ def parse_galcoord_and_validate(form, data):
         )
     return coord
 
-def parse_cone_or_arc_and_validate(form, data):
+def parse_sidelobe_arc_and_validate(form, data):
     """
-    parse cone or arc mode input and validate it
+    record whether to search along a CHIME-like sidelobe arc or in a cone
 
-    the input is a boolean (True for cone, False for arc)
-    if it can parse, returns the boolean value
-    if it cannot, raises ValidationError
+    the input is a boolean (True for arc, False for cone)
+    sets form.parsed_cone_or_arc to "arc" or "cone" and returns the boolean value
     """
 
-    if data.data not in [True, False]:
-        raise ValidationError("Invalid cone or arc mode input.")
-
-    form.parsed_cone_or_arc = "cone" if data.data else "arc"
+    form.parsed_cone_or_arc = "arc" if data.data else "cone"
 
     return data.data
 
@@ -233,8 +229,11 @@ class SearchForm(FlaskForm):
     lb_or_radec = BooleanField(
         "Equatorial or Galactic", validators=[], id="coord-toggle", default=True,
     )
-    cone_or_arc = BooleanField(
-        "Search Sidelobe Arc", validators=[parse_cone_or_arc_and_validate], id="search-sidelobe-arc", default=True,
+    sidelobe_arc = BooleanField(
+        "Search along a CHIME-like sidelobe arc instead of a cone",
+        validators=[parse_sidelobe_arc_and_validate],
+        id="search-sidelobe-arc",
+        default=False,
     )
     deduplicate = BooleanField("Deduplicate", validators=[], default=False)
 

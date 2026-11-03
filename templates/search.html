@@ -40,12 +40,6 @@
 
             <label class="form-label">{{form.radius.label}}</label>
             <span class="form-input">{{form.radius(size=32)}}</span>
-            <span class="form-option">
-                {{form.cone_or_arc(class='toggle on',
-                **{'data-toggle':"toggle",'data-off':'CHIME Sidelobe Arc',
-                'data-on':"Cone", 'data-onstyle':"default",
-                'data-offstyle':"warning",'data-width': "20%",'data-size': "small"})}}
-            </span>
             {% for error in form.radius.errors %}
             <span style="color:red;">
 
@@ -54,71 +48,6 @@
             {% endfor %}
 
         </p>
-
-        <div id="sidelobe-arc-panel" style="display: none;" >
-            <hr>
-
-            <p style="margin-bottom: 1em;">
-                <i>
-                    Following parameters are required to search along the sidelobe arc of a CHIME-like north-south oriented transit telescope:
-                </i>
-            </p>
-
-            <p>
-
-                <label class="form-label">{{form.arc_telescope.label}}</label>
-                <span class="form-input">{{form.arc_telescope(size=32)}}</span>
-                {% for error in form.arc_telescope.errors %}
-                <span style="color:red;">
-
-                    {{error}}
-                </span>
-                {% endfor %}
-
-            </p>
-
-            <p>
-
-                <label class="form-label">{{form.arc_epoch.label}}</label>
-                <span class="form-input">{{form.arc_epoch(size=32)}}</span>
-                <span class="form-option">
-                    (YYYY-MM-DD or MJD)
-                </span>
-                {% for error in form.arc_epoch.errors %}
-                <span style="color:red;">
-
-                    {{error}}
-                </span>
-                {% endfor %}
-
-            </p>
-
-            <hr>
-
-            <script>
-                function toggleSidelobeArcPanel() {
-                    if ($('#search-sidelobe-arc').is(':checked')) {
-                        $('#sidelobe-arc-panel').hide();
-                    } else {
-                        $('#sidelobe-arc-panel').show();
-                    }
-                }
-                function fillInEpochNow() {
-                    $('#arc_epoch').val(
-                        new Date().toISOString().split('T')[0]
-                    );
-                }
-                $(document).ready(function(){
-                    toggleSidelobeArcPanel();
-                    if ($('#arc_epoch').val() === '') {
-                        fillInEpochNow();
-                    }
-                });
-                $('#search-sidelobe-arc').change(function(){
-                    toggleSidelobeArcPanel();
-                });
-            </script>
-        </div>
 
         <p>
 
@@ -148,6 +77,83 @@
 
         </p>
 
+
+        <details id="advanced-options">
+            <summary>Advanced options</summary>
+
+            <p>
+                {{form.sidelobe_arc()}}
+                <label class="checkbox-label" for="search-sidelobe-arc">{{form.sidelobe_arc.label.text}}</label>
+            </p>
+
+            <div id="sidelobe-arc-panel">
+
+                <p style="margin-bottom: 1em;">
+                    <i>
+                        The following parameters are required to search along the sidelobe arc of a CHIME-like, north-south oriented transit telescope. 
+                        Use the "Distance" input above to specify the maximum angular separation from the arc. Query output will include each pulsar's separation in a “Sidelobe Arc Distance” column.
+                    </i>
+                    </i>
+                </p>
+
+                <p>
+
+                    <label class="form-label">{{form.arc_telescope.label}}</label>
+                    <span class="form-input">{{form.arc_telescope(size=32)}}</span>
+                    {% for error in form.arc_telescope.errors %}
+                    <span style="color:red;">
+
+                        {{error}}
+                    </span>
+                    {% endfor %}
+
+                </p>
+
+                <p>
+
+                    <label class="form-label">{{form.arc_epoch.label}}</label>
+                    <span class="form-input">{{form.arc_epoch(size=32)}}</span>
+                    <span class="form-option">
+                        (YYYY-MM-DD or MJD)
+                    </span>
+                    {% for error in form.arc_epoch.errors %}
+                    <span style="color:red;">
+
+                        {{error}}
+                    </span>
+                    {% endfor %}
+
+                </p>
+
+            </div>
+
+            <script>
+                $(document).ready(function() {
+                    panel = $('#advanced-options')[0];
+                    box = $('#search-sidelobe-arc')[0];
+                    chime_panel = $('#sidelobe-arc-panel')[0];
+                    epoch = $('#arc_epoch')[0];
+
+                    function syncPanel() {
+                        chime_panel.style.display = box.checked ? '' : 'none';
+                        if (box.checked) {
+                            panel.open = true;
+                        }
+                    }
+                    
+                    box.addEventListener('change', syncPanel);
+                    syncPanel();
+                    if (epoch.value === '') {
+                        epoch.value = new Date().toISOString().split('T')[0];
+                    }
+
+                    // Trigger syncPanel on page load to set initial state
+                    {% if form.sidelobe_arc.data %}box.checked = true;{% endif %}
+                    syncPanel();
+
+                });
+            </script>
+        </details>
 
         <p>
             <!-- <input type="submit" value="Search" class="btn btn-success"> -->
