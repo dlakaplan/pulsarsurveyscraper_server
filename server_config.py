@@ -10,9 +10,9 @@ if not SECRET_KEY:
 # export SURVEY_DATA=/path/to/survey/data
 DATA_DIR = os.environ.get("SURVEY_DATA")
 if not DATA_DIR:
-    DATA_DIR = os.path.curdir
+    DATA_DIR = os.path.abspath(os.path.curdir)
 
 OUTPUT_DIR = os.environ.get("SCRAPER_OUTPUT")
 if not OUTPUT_DIR:
-    OUTPUT_DIR = os.path.curdir
+    OUTPUT_DIR = os.path.abspath(os.path.curdir)
     

@@ -19,13 +19,15 @@
 
         <p>
 
-            {{form.coordinates.label}}
-            {{form.coordinates(size=32)}}
-            {{form.lb_or_radec(class='toggle on',
-            **{'data-toggle':"toggle",'data-off':'Galactic (<i id="gal-l-symbol">&#x2113</i> <i
-                id="gal-b-symbol">b)</i>',
-            'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
-            'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
+            <label class="form-label">{{form.coordinates.label}}</label>
+            <span class="form-input">{{form.coordinates(size=32)}}</span>
+            <span class="form-option">
+                {{form.lb_or_radec(class='toggle on',
+                **{'data-toggle':"toggle",'data-off':'Galactic (<i id="gal-l-symbol">&#x2113</i> <i
+                    id="gal-b-symbol">b)</i>',
+                'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
+                'data-offstyle':"primary",'data-width': "20%",'data-size': "small"})}}
+            </span>
             {% for error in form.coordinates.errors %}
             <span style="color:red;">
 
@@ -36,8 +38,8 @@
         </p>
         <p>
 
-            {{form.radius.label}}
-            {{form.radius(size=32)}}
+            <label class="form-label">{{form.radius.label}}</label>
+            <span class="form-input">{{form.radius(size=32)}}</span>
             {% for error in form.radius.errors %}
             <span style="color:red;">
 
@@ -49,8 +51,9 @@
 
         <p>
 
-            {{form.dm.label}}
-            {{form.dm(size=32)}} (optional)
+            <label class="form-label">{{form.dm.label}}</label>
+            <span class="form-input">{{form.dm(size=32)}}</span> 
+            <span class="form-option">(optional)</span>
             {% for error in form.dm.errors %}
             <span style="color:red;">
 
@@ -62,8 +65,9 @@
 
         <p>
 
-            {{form.dmtol.label}}
-            {{form.dmtol(size=32)}} (optional)
+            <label class="form-label">{{form.dmtol.label}}</label>
+            <span class="form-input">{{form.dmtol(size=32)}}</span> 
+            <span class="form-option">(optional)</span>
             {% for error in form.dmtol.errors %}
             <span style="color:red;">
 
@@ -73,6 +77,84 @@
 
         </p>
 
+
+        <details id="advanced-options">
+            <summary>Telescope-specific options</summary>
+
+            <p>
+                {{form.sidelobe_arc()}}
+                <label class="checkbox-label" for="search-sidelobe-arc">{{form.sidelobe_arc.label.text}}</label>
+            </p>
+
+            <div id="sidelobe-arc-panel">
+
+                <p style="margin-bottom: 1em;">
+                    <i>
+                        <!-- The following parameters are required to search along the sidelobe arc of a CHIME-like, north-south oriented transit telescope.  -->
+                        The following parameters are required to search along the sidelobe arc of the CHIME telescope. 
+                        Use the "Search Radius" input above to specify the maximum angular separation from the arc. Query output will include each pulsar's separation in a “Sidelobe Arc Distance” column.
+                    </i>
+                </p>
+
+                <!-- Hide the input for arc_telescope to default to CHIME, but keeping the code just in case a future change requires it -->
+                <p style="display: none;">
+
+                    <label class="form-label">{{form.arc_telescope.label}}</label>
+                    <span class="form-input">{{form.arc_telescope(size=32)}}</span>
+                    {% for error in form.arc_telescope.errors %}
+                    <span style="color:red;">
+
+                        {{error}}
+                    </span>
+                    {% endfor %}
+
+                </p>
+
+                <p>
+
+                    <label class="form-label">{{form.arc_epoch.label}}</label>
+                    <span class="form-input">{{form.arc_epoch(size=32)}}</span>
+                    <span class="form-option">
+                        (YYYY-MM-DD or MJD)
+                    </span>
+                    {% for error in form.arc_epoch.errors %}
+                    <span style="color:red;">
+
+                        {{error}}
+                    </span>
+                    {% endfor %}
+
+                </p>
+
+            </div>
+
+            <script>
+                $(document).ready(function() {
+                    panel = $('#advanced-options')[0];
+                    box = $('#search-sidelobe-arc')[0];
+                    chime_panel = $('#sidelobe-arc-panel')[0];
+                    epoch = $('#arc_epoch')[0];
+
+                    function syncPanel() {
+                        chime_panel.style.display = box.checked ? '' : 'none';
+                        if (box.checked) {
+                            panel.open = true;
+                        }
+                    }
+                    
+                    box.addEventListener('change', syncPanel);
+                    syncPanel();
+                    if (epoch.value === '') {
+                        epoch.value = new Date().toISOString().split('T')[0];
+                    }
+
+                    // Trigger syncPanel on page load to set initial state
+                    {% if form.sidelobe_arc.data %}box.checked = true;{% endif %}
+                    syncPanel();
+
+                });
+            </script>
+        </details>
 
         <p>
             <!-- <input type="submit" value="Search" class="btn btn-success"> -->

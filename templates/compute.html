@@ -18,13 +18,17 @@
     <form action="" method="post" novalidate>
       {{form.csrf_token}}
  
+<p>
 
-{{form.coordinates(size=32)}}
-{{form.lb_or_radec(class='toggle on',
-**{'data-toggle':"toggle",'data-off':'Galactic (<i
-id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
-'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
-'data-offstyle':"primary",'data-width': "20%",'data-height': "5%"})}}
+<label class="form-label-compute">Coordinates</label>
+<span class="form-input">{{form.coordinates(size=32)}}</span>
+<span class="form-option">
+    {{form.lb_or_radec(class='toggle on',
+    **{'data-toggle':"toggle",'data-off':'Galactic (<i
+    id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
+    'data-on':"Equatorial (α δ)", 'data-onstyle':"success",
+    'data-offstyle':"primary",'data-width': "20%","data-size": "small"})}}
+</span>
 {% for error in form.coordinates.errors %}
           <span style="color:red;">
  
@@ -39,41 +43,55 @@ id="gal-l-symbol">&#x2113</i> <i id="gal-b-symbol">b)</i>',
 <!--     </tr> -->
 <!-- {% endfor %} -->
  
-<br><br>
+</p>
 
-{{form.d_or_dm(size=32)}}
-{{form.d_or_dm_selector(class='toggle',
-**{'data-toggle':"toggle",'data-off':"DM (pc/cc)", 'data-on':"Distance
-(pc)",
-'data-onstyle':"success",'data-offstyle':"primary",'data-width':
-"20%",'data-height': "5%","data-size": "normal"})}}
+<p>
+
+<label class="form-label-compute">Distance or DM</label>
+<span class="form-input">{{form.d_or_dm(size=32)}}</span>
+<span class="form-option">
+    {{form.d_or_dm_selector(class='toggle',
+    **{'data-toggle':"toggle",'data-off':"DM (pc/cc)", 'data-on':"Distance
+    (pc)",
+    'data-onstyle':"success",'data-offstyle':"primary",'data-width':
+    "20%","data-size": "small"})}}
+</span>
           {% for error in form.d_or_dm.errors %}
           <span style="color:red;">
  
               {{error}}
           </span>
           {% endfor %}
-<br>
+ 
+</p>
 
+<p>
 
-{{form.frequency.label}}
-          {{form.frequency(size=32)}} (optional, NE2001 only)
+<label class="form-label-compute">{{form.frequency.label}}</label>
+<span class="form-input">{{form.frequency(size=32)}}</span>
+<span class="form-option">(optional, NE2001 only)</span>
           {% for error in form.frequency.errors %}
           <span style="color:red;">
  
               {{error}}
           </span>
           {% endfor %}
-<br>
-{{form.velocity.label}}
-          {{form.velocity(size=32)}} (optional, NE2001 only)
+ 
+</p>
+
+<p>
+
+<label class="form-label-compute">{{form.velocity.label}}</label>
+<span class="form-input">{{form.velocity(size=32)}}</span>
+<span class="form-option">(optional, NE2001 only)</span>
           {% for error in form.velocity.errors %}
           <span style="color:red;">
  
               {{error}}
           </span>
           {% endfor %}
-<br>
+ 
+</p>
 
 
 
